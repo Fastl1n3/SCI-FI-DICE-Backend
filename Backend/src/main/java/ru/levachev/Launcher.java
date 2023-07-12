@@ -1,29 +1,33 @@
 package ru.levachev;
 
-import ru.levachev.DataBaseHandler.BookingBotDataBaseHandler;
+import ru.levachev.DataBaseHandler.*;
 import ru.levachev.Model.Booking;
-
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import ru.levachev.Model.ClientInformation;
 
 public class Launcher {
     public static void main(String[] args) {
+        AdministratorDataBaseHandler administratorDataBaseHandler =
+                new AdministratorDataBaseHandler(new Config().jdbcTemplateOrganisationDB(),
+                        new Config().jdbcTemplateGamesDB());
+
+        AutoUpdatableDataBaseHandler.initTodayBookingList();
 
         /*BookingBotDataBaseHandler bookingBotDataBaseHandler =
                 new BookingBotDataBaseHandler(new Config().jdbcTemplateOrganisationDB());
-        bookingBotDataBaseHandler.setDefaultSchedule();
-        bookingBotDataBaseHandler.book(new Booking("899",
-                1, 0, 3, 1));*/
+        bookingBotDataBaseHandler.book(
+                new Booking("+44", 1, 0, 2, 1)
+        );*/
 
-        LocalDateTime localDateTime = LocalDateTime.now(ZoneId.of("GMT+7"));
-        System.out.println(localDateTime.getMinute());
-
-        /*bookingBotDataBaseHandler.truncateTable("Room");
-        bookingBotDataBaseHandler.setDefaultSchedule();
-        bookingBotDataBaseHandler.truncateTable("Booking");
-        Booking booking = new Booking("8923", 1, 0, 3, 3);
-        bookingBotDataBaseHandler.book(booking);*/
-
-        //bookingBotDataBaseHandler.updateRoomSchedule(1, 1, 0, 5);
+        ReceptionDataBaseHandler receptionDataBaseHandler =
+                new ReceptionDataBaseHandler(
+                        new Config().jdbcTemplateOrganisationDB()
+                );
+        System.out.println(receptionDataBaseHandler.isBookingNumberValid(10));
+        ClientInformation clientInformation =
+                receptionDataBaseHandler.payBooking(2, 10);
+        System.out.println(clientInformation.getPassword());
+        System.out.println(clientInformation.getRoomNumber());
+        System.out.println(clientInformation.getBeginTime());
+        System.out.println(clientInformation.getEndTime());
     }
 }

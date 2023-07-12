@@ -1,5 +1,6 @@
 package ru.levachev;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -7,15 +8,47 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
+import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
+import java.time.ZoneId;
 
 @Configuration
 @ComponentScan("ru.levachev")
-@PropertySource("classpath:dataBase.properties")
+@PropertySource("file:dataBase.properties")
 public class Config {
+
+    public static final int daysPerWeek=7;
+    public static final int hoursPerDay=24;
+    public static final ZoneId NSKZoneId = ZoneId.of("GMT+7");
+
+    //@Value("${roomNumber}")
+    public int roomNumber=5;
+
+    @Value("${DBDriver}")
+    public String DBDriver;
+
+    @Value("${organisationDBUrl}")
+    public String organisationDBUrl;
+
+    @Value("${organisationDBUsername}")
+    public String organisationDBUsername;
+
+    @Value("${organisationDBPassword}")
+    public String organisationDBPassword;
+
+    @Value("${gamesDBUrl}")
+    public String gamesDBUrl;
+
+    @Value("${gamesDBUsername}")
+    public String gamesDBUsername;
+
+    @Value("${gamesDBPassword}")
+    public String gamesDBPassword;
+
     @Bean
+    @PostConstruct
     public DataSource dataSourceOrganisationDB(){
-        System.out.println("init");
+        //System.out.println(DBDriver);
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
 
         dataSource.setDriverClassName("org.postgresql.Driver");
@@ -27,8 +60,8 @@ public class Config {
     }
 
     @Bean
+    @PostConstruct
     public DataSource dataSourceGamesDB(){
-        System.out.println("init");
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
 
         dataSource.setDriverClassName("org.postgresql.Driver");

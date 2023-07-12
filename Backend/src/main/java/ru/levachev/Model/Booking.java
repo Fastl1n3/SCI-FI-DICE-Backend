@@ -4,11 +4,11 @@ import java.sql.Time;
 import java.sql.Date;
 
 public class Booking {
-    private String phoneNumber;
+    private int bookingNumber;
     private int date;
     private int beginTime;
     private int endTime;
-    private int bookingNumber;
+    private String phoneNumber;
     private int roomNumber;
     private int gameID;
 

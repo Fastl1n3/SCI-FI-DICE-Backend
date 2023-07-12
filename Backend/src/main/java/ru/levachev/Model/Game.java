@@ -1,43 +1,35 @@
 package ru.levachev.Model;
 
 public class Game {
-    private int gameID;
-    private String gameName;
-    private String gameRules;
+    private int id;
+    private String name;
+    private String rules;
     private boolean isTaken;
 
     public Game() {
     }
 
-    public Game(int gameID, String gameName, String gameRules) {
-        this.gameID = gameID;
-        this.gameName=gameName;
-        this.gameRules = gameRules;
+    public Game(int id, String name, String rules) {
+        this.id = id;
+        this.name = name;
+        this.rules = rules;
         isTaken=false;
     }
 
-    public int getGameID() {
-        return gameID;
+    public String getRules() {
+        return rules;
     }
 
-    public void setGameID(int gameID) {
-        this.gameID = gameID;
+    public void setRules(String rules) {
+        this.rules = rules;
     }
 
-    public String getGameRules() {
-        return gameRules;
+    public String getName() {
+        return name;
     }
 
-    public void setGameRules(String gameRules) {
-        this.gameRules = gameRules;
-    }
-
-    public String getGameName() {
-        return gameName;
-    }
-
-    public void setGameName(String gameName) {
-        this.gameName = gameName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public boolean isTaken() {
@@ -46,5 +38,13 @@ public class Game {
 
     public void setTaken(boolean taken) {
         isTaken = taken;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 }

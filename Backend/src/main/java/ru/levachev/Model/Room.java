@@ -1,14 +1,13 @@
 package ru.levachev.Model;
 
-import ru.levachev.DataBaseHandler.BookingBotDataBaseHandler;
+import static ru.levachev.Config.daysPerWeek;
+import static ru.levachev.Config.hoursPerDay;
 
 import java.util.Arrays;
 
 public class Room {
     private int number;
-    private Boolean[] schedule = new Boolean[
-            BookingBotDataBaseHandler.hoursPerDay*
-                    BookingBotDataBaseHandler.daysPerWeek];
+    private Boolean[] schedule = new Boolean[hoursPerDay* daysPerWeek];
 
     private String password;
 

@@ -18,7 +18,7 @@ public class RoomMapper implements RowMapper<Room> {
         room.setSchedule((Boolean[]) tmp.getArray());
 
         room.setPassword(rs.getString("password"));
-        room.setCurrentPeopleNumber(rs.getInt("currentPeopleNumber"));
+        room.setCurrentPeopleNumber(rs.getInt("currentPersonNumber"));
 
         return room;
     }

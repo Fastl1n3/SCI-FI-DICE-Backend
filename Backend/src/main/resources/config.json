@@ -1,0 +1,12 @@
+{
+  "rooms": [
+    [1, "1", "gonna win"],
+    [2, "2", "gonna win"],
+    [3, "3", "gonna win"]
+  ],
+  "games": [
+    [1, "Looking Ahead"],
+    [2, "Forecast"],
+    [3, "Summary"]
+  ]
+}

@@ -1,14 +1,13 @@
 package ru.levachev.DataBaseHandler;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ru.levachev.Mapper.GameMapper;
 import ru.levachev.Model.Game;
 
 @Component
-public class InformationBotDataBaseHandler implements DataBaseHandler{
+public class InformationBotDataBaseHandler {
     private final JdbcTemplate jdbcTemplateGamesDB;
 
     @Autowired
@@ -23,13 +22,7 @@ public class InformationBotDataBaseHandler implements DataBaseHandler{
         if(game == null){
             return null;
         } else{
-            return game.getGameRules();
+            return game.getRules();
         }
     }
-
-    @Override
-    public void truncateTable(String tableName){
-        jdbcTemplateGamesDB.execute("TRUNCATE TABLE "+ tableName);
-    }
-
 }
