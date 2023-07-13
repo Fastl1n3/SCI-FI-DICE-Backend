@@ -2,10 +2,7 @@ package ru.levachev.DataBaseHandler;
 
 
 import org.springframework.jdbc.core.JdbcTemplate;
-import ru.levachev.Model.Booking;
-import ru.levachev.Model.Person;
-import ru.levachev.Model.Room;
-import ru.levachev.Model.Game;
+import ru.levachev.Model.*;
 
 import java.sql.Date;
 
@@ -23,16 +20,22 @@ public class DataBaseEntityAdder {
     }
 
     void addBookingToTable(Booking booking, JdbcTemplate jdbcTemplate){
-        jdbcTemplate.update("INSERT INTO Booking VALUES(?, ?, ?, ?, ?, ?, ?)",
-                booking.getBookingNumber(), booking.getDate(),
-                booking.getBeginTime(), booking.getEndTime(),
-                booking.getPhoneNumber(), booking.getRoomNumber(),
-                booking.getGameID());
+        jdbcTemplate.update("INSERT INTO Booking VALUES(?, ?, ?, ?, ?, ?, ?, ?)",
+                booking.getBookingNumber(), booking.getBeginDate(),
+                booking.getEndDate(), booking.getBeginTime(),
+                booking.getEndTime(), booking.getPhoneNumber(),
+                booking.getRoomNumber(), booking.getGameID());
     }
 
     void addPersonToTable(Person person, JdbcTemplate jdbcTemplate){
         jdbcTemplate.update("INSERT INTO Person VALUES(?, ?, ?, ?)",
                 person.getPhoneNumber(), person.isBlackMark(),
                 Date.valueOf(person.getLastVisit()), person.getDiscount());
+    }
+
+    void addRoomDataToTable(BufferRoomData roomData, JdbcTemplate jdbcTemplate){
+        jdbcTemplate.update("INSERT INTO bufferRoomData VALUES(?, ?, ?)",
+                roomData.getRoomNumber(), roomData.getPeopleNumber(),
+                roomData.isShouldChange());
     }
 }

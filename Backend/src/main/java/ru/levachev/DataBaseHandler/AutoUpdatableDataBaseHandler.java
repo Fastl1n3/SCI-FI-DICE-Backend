@@ -7,37 +7,53 @@ import org.springframework.stereotype.Component;
 import ru.levachev.Mapper.BookingMapper;
 import ru.levachev.Mapper.RoomMapper;
 import ru.levachev.Model.Booking;
-import ru.levachev.Model.BufferedRoomData;
+import ru.levachev.Model.BufferRoomData;
 import ru.levachev.Model.Room;
 import ru.levachev.Config;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.sql.Date;
 
 import static ru.levachev.Config.*;
 
 
 @Component
 public class AutoUpdatableDataBaseHandler{
-    private static List<Booking> todayBookingList;
-
+    private static List<Booking> todayEndBookingList;
+    private static List<Booking> todayBeginBookingList;
+    private final JdbcTemplate jdbcTemplateGamesDB;
     private final JdbcTemplate jdbcTemplateOrganisationDB;
 
     @Autowired
-    public AutoUpdatableDataBaseHandler(JdbcTemplate jdbcTemplateOrganisationDB) {
-        this.jdbcTemplateOrganisationDB = jdbcTemplateOrganisationDB;
+    public AutoUpdatableDataBaseHandler(JdbcTemplate jdbcTemplateOrganisationDB, JdbcTemplate jdbcTemplateGamesDB) {
+        this.jdbcTemplateOrganisationDB=jdbcTemplateOrganisationDB;
+        this.jdbcTemplateGamesDB = jdbcTemplateGamesDB;
     }
 
-    public static void initTodayBookingList(){
+    public static void initTodayEndBookingList(){
         JdbcTemplate jdbcTemplate = new Config().jdbcTemplateOrganisationDB();
-        todayBookingList = jdbcTemplate.
-                query("SELECT * FROM Booking WHERE date=?",
-                        new Object[]{1}, new BookingMapper());
+        todayEndBookingList = jdbcTemplate.
+                query("SELECT * FROM Booking WHERE endDate=?",
+                        new Object[]{Date.valueOf(LocalDate.now())},
+                        new BookingMapper());
     }
 
-    public static void addToTodayBookingList(Booking booking){
-        todayBookingList.add(booking);
+    public static void initTodayBeginBookingList(){
+        JdbcTemplate jdbcTemplate = new Config().jdbcTemplateOrganisationDB();
+        todayBeginBookingList = jdbcTemplate.
+                query("SELECT * FROM Booking WHERE beginDate=?",
+                        new Object[]{Date.valueOf(LocalDate.now())},
+                        new BookingMapper());
+    }
+
+    public static void addToTodayEndBookingList(Booking booking){
+        todayEndBookingList.add(booking);
+    }
+    public static void addToTodayBeginBookingList(Booking booking){
+        todayBeginBookingList.add(booking);
     }
 
     public ArrayList<String> everyFifteenMin(){
@@ -51,7 +67,8 @@ public class AutoUpdatableDataBaseHandler{
 
     public void everyDay(){
         updateRoomTablePerDay();
-        initTodayBookingList();
+        initTodayEndBookingList();
+        initTodayBeginBookingList();
     }
 
     public boolean checkPeople(int roomNumber, int actualPeopleNumber){
@@ -67,7 +84,7 @@ public class AutoUpdatableDataBaseHandler{
 
     private void deleteOverdueBooking(){
         int currentTime = LocalDateTime.now(NSKZoneId).getHour();
-        for(Booking booking : todayBookingList){
+        for(Booking booking : todayEndBookingList){
             if(booking.getEndTime() == currentTime){
                 deleteBooking(booking);
             }
@@ -77,7 +94,9 @@ public class AutoUpdatableDataBaseHandler{
     private void deleteBooking(Booking booking){
         jdbcTemplateOrganisationDB.update("DELETE FROM Booking WHERE bookingNumber=?",
                 booking.getBookingNumber());
-        todayBookingList.remove(booking);
+        todayEndBookingList.remove(booking);
+        jdbcTemplateGamesDB.update("UPDATE Games SET isTaken=? WHERE id=?",
+                false, booking.getGameID());
     }
 
     private ArrayList<String> checkTimeOut(){
@@ -85,8 +104,8 @@ public class AutoUpdatableDataBaseHandler{
 
         int currentTime = LocalDateTime.now(NSKZoneId).getHour();
 
-        for(Booking booking : todayBookingList){
-            if(booking.getEndTime() == (currentTime+1)){
+        for(Booking booking : todayEndBookingList){
+            if(booking.getEndTime() == (currentTime+1)%hoursPerDay){
                 goHome.add(booking.getPhoneNumber());
             }
         }
@@ -114,13 +133,13 @@ public class AutoUpdatableDataBaseHandler{
     }
 
     public void updateRoomData(){
-        List<BufferedRoomData> list =
+        List<BufferRoomData> list =
                 jdbcTemplateOrganisationDB.
-                        query("SELECT * FROM bufferedRoomData WHERE isShouldChange=?",
+                        query("SELECT * FROM bufferRoomData WHERE isShouldChange=?",
                                 new Object[]{true}, new BeanPropertyRowMapper<>());
-        for (BufferedRoomData bufferedRoomData : list) {
-            updateDataByRoom(bufferedRoomData.getRoomNumber(),
-                    bufferedRoomData.getPeopleNumber());
+        for (BufferRoomData bufferRoomData : list) {
+            updateDataByRoom(bufferRoomData.getRoomNumber(),
+                    bufferRoomData.getPeopleNumber());
         }
     }
 

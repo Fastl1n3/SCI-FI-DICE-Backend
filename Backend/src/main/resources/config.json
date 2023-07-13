@@ -1,12 +1,13 @@
 {
-  "rooms": [
-    [1, "1", "gonna win"],
-    [2, "2", "gonna win"],
-    [3, "3", "gonna win"]
-  ],
   "games": [
-    [1, "Looking Ahead"],
-    [2, "Forecast"],
-    [3, "Summary"]
+    {"id": 1, "name": "11", "rules":  "win11"},
+    {"id": 2, "name": "22", "rules":  "win22"},
+    {"id": 3, "name": "33", "rules":  "win33"},
+    {"id": 4, "name": "44", "rules":  "win44"}
+  ],
+  "rooms": [
+    {"number": 1, "password":"11"},
+    {"number": 2, "password":"22"},
+    {"number": 3, "password":"33"}
   ]
 }

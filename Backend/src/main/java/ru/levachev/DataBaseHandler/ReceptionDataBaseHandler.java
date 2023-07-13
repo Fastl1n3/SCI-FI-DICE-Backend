@@ -6,87 +6,124 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ru.levachev.Mapper.RoomMapper;
-import ru.levachev.Model.Booking;
-import ru.levachev.Model.ClientInformation;
-import ru.levachev.Model.Person;
-import ru.levachev.Model.Room;
+import ru.levachev.Model.*;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.time.LocalDateTime;
+
+import static ru.levachev.Config.NSKZoneId;
+import static ru.levachev.Config.hoursPerDay;
+import static ru.levachev.DataBaseHandler.BookingBotDataBaseHandler.dayNumberRelativeToToday;
 
 @Component
 public class ReceptionDataBaseHandler extends DataBaseEntityAdder{
-    private Map<Integer, Integer> roomData;
+    private Booking lastBooking;
+
+    private final JdbcTemplate jdbcTemplateGamesDB;
     private final JdbcTemplate jdbcTemplateOrganisationDB;
-    private int lastPersonBookingNumber;
 
     @Autowired
-    public ReceptionDataBaseHandler(JdbcTemplate jdbcTemplateOrganisationDB) {
-        this.jdbcTemplateOrganisationDB = jdbcTemplateOrganisationDB;
-        roomData = new HashMap<>();
+    public ReceptionDataBaseHandler(JdbcTemplate jdbcTemplateOrganisationDB, JdbcTemplate jdbcTemplateGamesDB) {
+        this.jdbcTemplateOrganisationDB=jdbcTemplateOrganisationDB;
+        this.jdbcTemplateGamesDB = jdbcTemplateGamesDB;
     }
 
-    public boolean isBookingNumberValid(int bookingNumber) {
-        lastPersonBookingNumber = bookingNumber;
-        Booking booking = jdbcTemplateOrganisationDB.query("SELECT * FROM Booking WHERE bookingNumber=?",
+    public ReceptionCodeAnswer isBookingNumberValid(int bookingNumber) {
+        lastBooking = jdbcTemplateOrganisationDB.query("SELECT * FROM Booking WHERE bookingNumber=?",
                         new Object[]{bookingNumber}, new BeanPropertyRowMapper<>(Booking.class))
                 .stream().findAny().orElse(null);
-        return booking != null;
+        if(lastBooking == null){
+            return ReceptionCodeAnswer.INVALID_ID;
+        }
+        if(isWrongTime()){
+            return ReceptionCodeAnswer.WRONG_DATE;
+        }
+        return ReceptionCodeAnswer.SUCCESS;
+    }
+
+    private boolean isWrongTime(){
+        if(lastBooking.getBeginTime() == 0){
+            if(!lastBooking.getBeginDate().equals(LocalDate.now())){
+                if(dayNumberRelativeToToday(lastBooking.getBeginDate()) == 1){
+                    return isInTimeWindow();
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } else{
+            if(lastBooking.getBeginDate().equals(LocalDate.now())){
+                return isInTimeWindow();
+            } else {
+                return false;
+            }
+        }
+    }
+
+    private boolean isInTimeWindow(){
+        int currentHour = LocalDateTime.now(NSKZoneId).getHour();
+        int currentMinute = LocalDateTime.now(NSKZoneId).getMinute();
+
+        if(currentHour == lastBooking.getBeginTime()){
+            return currentHour <= 20;
+        } else if((currentHour+1)%hoursPerDay == lastBooking.getBeginTime()){
+            return currentMinute >= 40;
+        }
+        return false;
     }
 
     public ClientInformation payBooking(int gameID, int peopleNumber) {
-        Booking booking = getBooking();
-
-        if (booking == null) {
-            System.out.println("1");
-            return null;
-        }
+        takeGame(gameID);
 
         updateGameIDInBookingEntry(gameID);
 
-        updateRoomDataByBookingNumber(booking.getBookingNumber(), peopleNumber);
+        updateRoomDataByBookingNumber(lastBooking.getBookingNumber(), peopleNumber);
 
         if(!pay()){
-            System.out.println("2");
             return null;
         }
 
         try{
-            addPersonToTable(new Person(booking.getPhoneNumber(), LocalDate.now()), jdbcTemplateOrganisationDB);
+            addPersonToTable(new Person(lastBooking.getPhoneNumber(), LocalDate.now()), jdbcTemplateOrganisationDB);
         } catch (DataAccessException ignored){
         }
 
-        Room room = getRoom(booking);
+        Room room = getRoom(lastBooking);
         if(room == null){
-            System.out.println("3");
             return null;
         }
 
-        return new ClientInformation(booking.getRoomNumber(),
-                booking.getBeginTime(), booking.getEndTime(),
+        return new ClientInformation(lastBooking.getRoomNumber(),
+                lastBooking.getBeginTime(), lastBooking.getEndTime(),
                 room.getPassword());
     }
 
     private Booking getBooking(){
        return jdbcTemplateOrganisationDB.query("SELECT * FROM Booking WHERE bookingNumber=?",
-                        new Object[]{lastPersonBookingNumber}, new BeanPropertyRowMapper<>(Booking.class))
+                        new Object[]{lastBooking.getBookingNumber()}, new BeanPropertyRowMapper<>(Booking.class))
                 .stream().findAny().orElse(null);
     }
 
     private Room getRoom(Booking booking){
         return jdbcTemplateOrganisationDB.query("SELECT * FROM Room WHERE number=?",
-                        new Object[]{booking.getBookingNumber()}, new RoomMapper()).
+                        new Object[]{booking.getRoomNumber()}, new RoomMapper()).
                 stream().findAny().orElse(null);
     }
 
     private void updateGameIDInBookingEntry(int gameID){
         jdbcTemplateOrganisationDB.update("UPDATE Booking SET gameID=? WHERE bookingNumber=?",
-                gameID, lastPersonBookingNumber);
+                gameID, lastBooking.getBookingNumber());
     }
 
     private void updateRoomDataByBookingNumber(int bookingNumber, int peopleNumber){
-        jdbcTemplateOrganisationDB.update("UPDATE bufferedRoomData SET peopleNumber=?, isShouldChange=? WHERE roomNumber=?",
+        jdbcTemplateOrganisationDB.update("UPDATE bufferRoomData SET peopleNumber=?, \"isShouldChange\"=? WHERE roomNumber=?",
                 peopleNumber, true, bookingNumber);
+    }
+
+    private void takeGame(int gameID){
+        jdbcTemplateGamesDB.update("UPDATE Games SET isTaken=? WHERE id=?",
+                true, gameID);
     }
 
     private boolean pay(){

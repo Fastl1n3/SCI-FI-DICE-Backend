@@ -1,11 +1,12 @@
 package ru.levachev.Model;
 
-import java.sql.Time;
-import java.sql.Date;
+
+import java.time.LocalDate;
 
 public class Booking {
     private int bookingNumber;
-    private int date;
+    private LocalDate beginDate;
+    private LocalDate endDate;
     private int beginTime;
     private int endTime;
     private String phoneNumber;
@@ -15,8 +16,9 @@ public class Booking {
     public Booking(){
     }
 
-    public Booking(String phoneNumber, int date, int beginTime, int endTime, int roomNumber) {
-        this.date = date;
+    public Booking(String phoneNumber, LocalDate beginDate, LocalDate endDate, int beginTime, int endTime, int roomNumber) {
+        this.beginDate = beginDate;
+        this.endDate = endDate;
         this.beginTime = beginTime;
         this.endTime = endTime;
         this.phoneNumber = phoneNumber;
@@ -25,14 +27,6 @@ public class Booking {
         this.gameID = -1;
     }
 
-
-    public int getDate() {
-        return date;
-    }
-
-    public void setDate(int date) {
-        this.date = date;
-    }
 
     public int getBeginTime() {
         return beginTime;
@@ -80,5 +74,21 @@ public class Booking {
 
     public void setGameID(int gameID) {
         this.gameID = gameID;
+    }
+
+    public LocalDate getBeginDate() {
+        return beginDate;
+    }
+
+    public void setBeginDate(LocalDate beginDate) {
+        this.beginDate = beginDate;
+    }
+
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
     }
 }

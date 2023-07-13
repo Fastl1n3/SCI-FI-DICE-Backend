@@ -1,16 +1,16 @@
 package ru.levachev.Model;
 
-public class BufferedRoomData {
+public class BufferRoomData {
     private int roomNumber;
     private int peopleNumber;
     private boolean isShouldChange;
 
-    public BufferedRoomData() {
+    public BufferRoomData() {
     }
 
-    public BufferedRoomData(int roomNumber, int peopleNumber) {
+    public BufferRoomData(int roomNumber) {
         this.roomNumber = roomNumber;
-        this.peopleNumber = peopleNumber;
+        this.peopleNumber = 0;
         this.isShouldChange = false;
     }
 
