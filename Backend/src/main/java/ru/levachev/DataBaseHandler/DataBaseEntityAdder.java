@@ -28,9 +28,10 @@ public class DataBaseEntityAdder {
     }
 
     void addPersonToTable(Person person, JdbcTemplate jdbcTemplate){
-        jdbcTemplate.update("INSERT INTO Person VALUES(?, ?, ?, ?)",
+        jdbcTemplate.update("INSERT INTO Person VALUES(?, ?, ?, ?, ?, ?)",
                 person.getPhoneNumber(), person.isBlackMark(),
-                Date.valueOf(person.getLastVisit()), person.getDiscount());
+                Date.valueOf(person.getLastVisit()), person.getDiscount(),
+                person.getBookingBotChatID(), person.getInfoBotChatID());
     }
 
     void addRoomDataToTable(BufferRoomData roomData, JdbcTemplate jdbcTemplate){

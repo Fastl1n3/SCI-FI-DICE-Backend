@@ -1,13 +1,15 @@
 package ru.levachev.DataBaseHandler;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ru.levachev.Mapper.BookingMapper;
+import ru.levachev.Mapper.BufferRoomDataMapper;
+import ru.levachev.Mapper.PersonMapper;
 import ru.levachev.Mapper.RoomMapper;
 import ru.levachev.Model.Booking;
 import ru.levachev.Model.BufferRoomData;
+import ru.levachev.Model.Person;
 import ru.levachev.Model.Room;
 import ru.levachev.Config;
 
@@ -71,14 +73,34 @@ public class AutoUpdatableDataBaseHandler{
         initTodayBeginBookingList();
     }
 
-    public boolean checkPeople(int roomNumber, int actualPeopleNumber){
+    public String checkPeople(int roomNumber, int actualPeopleNumber){
         Room room = jdbcTemplateOrganisationDB.query("SELECT * FROM Room WHERE number=?",
                         new Object[]{roomNumber}, new RoomMapper()).stream().findAny().
                 orElse(null);
         if(room == null){
-            return false;
+            return null;
         }
-        return room.getCurrentPeopleNumber() == actualPeopleNumber;
+        if(room.getCurrentPeopleNumber() < actualPeopleNumber) {
+            String phoneNumber = getPhoneNumberByRoom(roomNumber);
+            if(phoneNumber == null){
+                return null;/////////////////////////////////////////
+            }
+            return getInfoBotChatIDByPhoneNumber(phoneNumber);
+        } else {
+            return null;
+        }
+    }
+
+    private String getPhoneNumberByRoom(int roomNumber){
+        for(Booking booking : todayBeginBookingList){
+            int currentHour = LocalDateTime.now().getHour();
+            if(booking.getRoomNumber() == roomNumber &&
+            booking.getBeginTime()<=currentHour &&
+                    booking.getEndTime()>=currentHour){
+                return booking.getPhoneNumber();
+            }
+        }
+        return null;
     }
 
 
@@ -106,10 +128,22 @@ public class AutoUpdatableDataBaseHandler{
 
         for(Booking booking : todayEndBookingList){
             if(booking.getEndTime() == (currentTime+1)%hoursPerDay){
-                goHome.add(booking.getPhoneNumber());
+                goHome.add(
+                        getInfoBotChatIDByPhoneNumber(booking.getPhoneNumber())
+                );
             }
         }
         return goHome;
+    }
+
+    private String getInfoBotChatIDByPhoneNumber(String phoneNumber){
+        Person person = jdbcTemplateOrganisationDB.query("SELECT * FROM Person WHERE phoneNumber=?",
+                        new Object[]{phoneNumber}, new PersonMapper()).stream().findAny().
+                orElse(null);
+        if(person == null){
+            return null;
+        }
+        return person.getInfoBotChatID();
     }
 
     private void updateRoomTablePerDay(){
@@ -136,7 +170,7 @@ public class AutoUpdatableDataBaseHandler{
         List<BufferRoomData> list =
                 jdbcTemplateOrganisationDB.
                         query("SELECT * FROM bufferRoomData WHERE isShouldChange=?",
-                                new Object[]{true}, new BeanPropertyRowMapper<>());
+                                new Object[]{true}, new BufferRoomDataMapper());
         for (BufferRoomData bufferRoomData : list) {
             updateDataByRoom(bufferRoomData.getRoomNumber(),
                     bufferRoomData.getPeopleNumber());

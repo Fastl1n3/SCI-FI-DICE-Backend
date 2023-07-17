@@ -10,6 +10,7 @@ import ru.levachev.Model.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import static ru.levachev.Config.NSKZoneId;
 import static ru.levachev.Config.hoursPerDay;
@@ -18,7 +19,7 @@ import static ru.levachev.DataBaseHandler.BookingBotDataBaseHandler.dayNumberRel
 @Component
 public class ReceptionDataBaseHandler extends DataBaseEntityAdder{
     private Booking lastBooking;
-
+    private boolean isLate;
     private final JdbcTemplate jdbcTemplateGamesDB;
     private final JdbcTemplate jdbcTemplateOrganisationDB;
 
@@ -35,13 +36,51 @@ public class ReceptionDataBaseHandler extends DataBaseEntityAdder{
         if(lastBooking == null){
             return ReceptionCodeAnswer.INVALID_ID;
         }
-        if(isWrongTime()){
+        if(!isWrongTime()){
             return ReceptionCodeAnswer.WRONG_DATE;
         }
         return ReceptionCodeAnswer.SUCCESS;
     }
 
+    private boolean isAfter(LocalDate date, int hour){
+        LocalDateTime localDateTime = LocalDateTime.of(date,
+                LocalTime.of(hour, 0, 0, 0));
+        LocalDateTime localDateTimeNow = LocalDateTime.now();
+
+        return localDateTime.isAfter(localDateTimeNow);
+    }
+
+    private boolean isBefore(LocalDate date, int hour){
+        LocalDateTime localDateTime = LocalDateTime.of(date,
+                LocalTime.of(hour, 0, 0, 0));
+        LocalDateTime localDateTimeNow = LocalDateTime.now();
+
+        return localDateTime.isBefore(localDateTimeNow);
+    }
+
     private boolean isWrongTime(){
+        LocalDateTime beginTime = LocalDateTime.of(lastBooking.getBeginDate(),
+                LocalTime.of(lastBooking.getBeginTime(), 0, 0, 0));
+
+        LocalDateTime endTime = LocalDateTime.of(lastBooking.getEndDate(),
+                LocalTime.of(lastBooking.getEndTime(), 0, 0, 0));
+
+        LocalDateTime nowTime = LocalDateTime.now();
+
+        LocalDateTime under20BeginTime = beginTime.minusMinutes(20);
+
+        if(nowTime.isBefore(under20BeginTime) || nowTime.isAfter(endTime)){
+            return false;
+        } else if(nowTime.isBefore(beginTime)){
+            isLate = false;
+            return true;
+        } else {
+            isLate = true;
+            return true;
+        }
+    }
+
+    /*private boolean isWrongTime(){
         if(lastBooking.getBeginTime() == 0){
             if(!lastBooking.getBeginDate().equals(LocalDate.now())){
                 if(dayNumberRelativeToToday(lastBooking.getBeginDate()) == 1){
@@ -71,38 +110,31 @@ public class ReceptionDataBaseHandler extends DataBaseEntityAdder{
             return currentMinute >= 40;
         }
         return false;
-    }
+    }*/
 
     public ClientInformation payBooking(int gameID, int peopleNumber) {
+        Room room = getRoom(lastBooking);
+        if(room == null){
+            return null;
+        }
+
         takeGame(gameID);
 
         updateGameIDInBookingEntry(gameID);
 
-        updateRoomDataByBookingNumber(lastBooking.getBookingNumber(), peopleNumber);
+        if(isLate) {
+            updateCurrentPeopleNumberByRoomNumber(lastBooking.getRoomNumber(), peopleNumber);
+        } else{
+            updateRoomDataByRoomNumber(lastBooking.getRoomNumber(), peopleNumber);
+        }
 
         if(!pay()){
-            return null;
-        }
-
-        try{
-            addPersonToTable(new Person(lastBooking.getPhoneNumber(), LocalDate.now()), jdbcTemplateOrganisationDB);
-        } catch (DataAccessException ignored){
-        }
-
-        Room room = getRoom(lastBooking);
-        if(room == null){
             return null;
         }
 
         return new ClientInformation(lastBooking.getRoomNumber(),
                 lastBooking.getBeginTime(), lastBooking.getEndTime(),
                 room.getPassword());
-    }
-
-    private Booking getBooking(){
-       return jdbcTemplateOrganisationDB.query("SELECT * FROM Booking WHERE bookingNumber=?",
-                        new Object[]{lastBooking.getBookingNumber()}, new BeanPropertyRowMapper<>(Booking.class))
-                .stream().findAny().orElse(null);
     }
 
     private Room getRoom(Booking booking){
@@ -116,9 +148,14 @@ public class ReceptionDataBaseHandler extends DataBaseEntityAdder{
                 gameID, lastBooking.getBookingNumber());
     }
 
-    private void updateRoomDataByBookingNumber(int bookingNumber, int peopleNumber){
+    private void updateRoomDataByRoomNumber(int roomNumber, int peopleNumber){
         jdbcTemplateOrganisationDB.update("UPDATE bufferRoomData SET peopleNumber=?, \"isShouldChange\"=? WHERE roomNumber=?",
-                peopleNumber, true, bookingNumber);
+                peopleNumber, true, roomNumber);
+    }
+
+    private void updateCurrentPeopleNumberByRoomNumber(int roomNumber, int currentPeopleNumber){
+        jdbcTemplateOrganisationDB.update("UPDATE Room SET currentPeopleNumber=? WHERE number=?",
+                currentPeopleNumber, roomNumber);
     }
 
     private void takeGame(int gameID){

@@ -1,9 +1,12 @@
 package ru.levachev.DataBaseHandler;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import ru.levachev.Mapper.PersonMapper;
 import ru.levachev.Model.Booking;
+import ru.levachev.Model.Person;
 import ru.levachev.Model.Room;
 import ru.levachev.Model.RoomScheduleForDay;
 import ru.levachev.Mapper.RoomMapper;
@@ -11,12 +14,10 @@ import ru.levachev.Mapper.RoomMapper;
 import static java.lang.Math.abs;
 import static java.time.temporal.ChronoUnit.DAYS;
 import static ru.levachev.Config.hoursPerDay;
-import static ru.levachev.DataBaseHandler.AutoUpdatableDataBaseHandler.addToTodayEndBookingList;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Component
 public class BookingBotDataBaseHandler extends DataBaseEntityAdder {
@@ -31,25 +32,54 @@ public class BookingBotDataBaseHandler extends DataBaseEntityAdder {
         return DAYS.between(date, LocalDate.now());
     }
 
-    public int book(Booking booking){
-        updateRoomSchedule(booking.getRoomNumber(), booking.getBeginDate(), booking.getEndDate(), booking.getBeginTime(), booking.getEndTime());
-        int bookingNumber=generateBookingNumber();
-        booking.setBookingNumber(bookingNumber);
-        addBookingToTable(booking, jdbcTemplateOrganisationDB);
+    public boolean authorization(String phoneNumber, String bookingBotChatID){
+        try{
+            addPersonToTable(new Person(phoneNumber, bookingBotChatID), jdbcTemplateOrganisationDB);
+            return true;
+        } catch (DataAccessException ignored){
+            return false;
+        }
+    }
 
-        if(Objects.equals(booking.getEndDate(), LocalDate.now())){
-            addToTodayEndBookingList(booking);
+    public int book(String bookingChatID, LocalDate beginDate, LocalDate endDate, int beginTime, int endTime, int roomNumber){
+        String phoneNumber = getPhoneNumberByBookingChatID(bookingChatID);
+        if(phoneNumber == null){
+            return -1;
         }
 
+        int bookingNumber = generateUUID(roomNumber, beginTime, beginDate);
+
+        Booking booking = new Booking(bookingNumber, phoneNumber, beginDate,
+                endDate, beginTime, endTime, roomNumber);
+
+        try{
+            addBookingToTable(booking, jdbcTemplateOrganisationDB);
+            updateRoomSchedule(booking.getRoomNumber(), booking.getBeginDate(), booking.getEndDate(), booking.getBeginTime(), booking.getEndTime());
+        } catch (DataAccessException ignored){
+            return -1;
+        }
         return bookingNumber;
     }
 
-    private int generateBookingNumber(){
-        return 11;
+    private String getPhoneNumberByBookingChatID(String bookingBotChatID){
+        Person person = jdbcTemplateOrganisationDB.query("SELECT * FROM Person WHERE bookingBotChatID=?",
+                        new Object[]{bookingBotChatID}, new PersonMapper()).
+                stream().findAny().orElse(null);
+        if(person == null){
+            return null;
+        } else {
+            return person.getPhoneNumber();
+        }
+    }
+
+    private int generateUUID(int roomNumber, int beginTime, LocalDate beginDate){
+        return (beginDate.getYear()*10000+beginDate.getMonthValue()*1000+beginDate.getDayOfMonth()*100+roomNumber*10+beginTime);
     }
 
     public void updateRoomSchedule(int roomNumber, LocalDate beginDate, LocalDate endDate, int beginTime, int endTime){
-        Room room = jdbcTemplateOrganisationDB.query("SELECT * FROM Room WHERE number=?", new Object[]{roomNumber}, new RoomMapper()).stream().findAny().orElse(null);
+        Room room = jdbcTemplateOrganisationDB.query("SELECT * FROM Room WHERE number=?",
+                new Object[]{roomNumber}, new RoomMapper()).
+                stream().findAny().orElse(null);
         assert room != null;
         Boolean[] tmpArray = room.getSchedule();
         //////////////////////////////////////////////////////////////

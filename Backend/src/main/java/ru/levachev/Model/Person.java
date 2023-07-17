@@ -7,14 +7,18 @@ public class Person {
     private boolean blackMark;
     private LocalDate lastVisit;
     private int discount;
+    private String bookingBotChatID;
+    private String infoBotChatID;
 
     public Person() {
     }
-    public Person(String phoneNumber, LocalDate lastVisit) {
+    public Person(String phoneNumber, String bookingBotChatID) {
         this.phoneNumber = phoneNumber;
+        lastVisit=LocalDate.now();
         blackMark = false;
-        this.lastVisit = lastVisit;
         discount = 0;
+        this.bookingBotChatID=bookingBotChatID;
+        infoBotChatID = null;
     }
     public String getPhoneNumber() {
         return phoneNumber;
@@ -46,5 +50,21 @@ public class Person {
 
     public void setDiscount(int discount) {
         this.discount = discount;
+    }
+
+    public String getBookingBotChatID() {
+        return bookingBotChatID;
+    }
+
+    public void setBookingBotChatID(String bookingBotChatID) {
+        this.bookingBotChatID = bookingBotChatID;
+    }
+
+    public String getInfoBotChatID() {
+        return infoBotChatID;
+    }
+
+    public void setInfoBotChatID(String infoBotChatID) {
+        this.infoBotChatID = infoBotChatID;
     }
 }

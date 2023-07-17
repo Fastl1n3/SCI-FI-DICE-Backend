@@ -40,7 +40,7 @@ public class InitializationDBHandler extends DataBaseEntityAdder{
     public void initRoomTable() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
 
-        RoomsResponse roomsResponse= objectMapper.readValue(ResourceUtils.getFile("classpath:config.json"), RoomsResponse.class);
+        RoomsResponse roomsResponse= objectMapper.readValue(ResourceUtils.getFile("/home/rlevachev/DBBack/src/main/resources/config.json"), RoomsResponse.class);
 
         List<Room> roomList = roomsResponse.getRooms();
 

@@ -14,8 +14,10 @@ public class PersonMapper implements RowMapper<Person> {
 
         person.setPhoneNumber(resultSet.getString("phoneNumber"));
         person.setBlackMark(resultSet.getBoolean("blackMark"));
-        person.setLastVisit(resultSet.getDate("lastVisit").toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+        person.setLastVisit(resultSet.getDate("lastVisit").toLocalDate());
         person.setDiscount(resultSet.getInt("discount"));
+        person.setBookingBotChatID(resultSet.getString("bookingBotChatID"));
+        person.setInfoBotChatID(resultSet.getString("infoBotChatID"));
 
         return person;
     }

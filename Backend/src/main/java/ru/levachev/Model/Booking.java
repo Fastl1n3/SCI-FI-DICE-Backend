@@ -16,15 +16,15 @@ public class Booking {
     public Booking(){
     }
 
-    public Booking(String phoneNumber, LocalDate beginDate, LocalDate endDate, int beginTime, int endTime, int roomNumber) {
+    public Booking(int bookingNumber, String phoneNumber, LocalDate beginDate, LocalDate endDate, int beginTime, int endTime, int roomNumber) {
         this.beginDate = beginDate;
         this.endDate = endDate;
         this.beginTime = beginTime;
         this.endTime = endTime;
         this.phoneNumber = phoneNumber;
-        this.bookingNumber = -1;
         this.roomNumber = roomNumber;
         this.gameID = -1;
+        this.bookingNumber=bookingNumber;
     }
 
 
