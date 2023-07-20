@@ -5,15 +5,17 @@ public class ClientInformation {
     private int beginTime;
     private int endTime;
     private String password;
+    private ReceptionCodeAnswer codeAnswer;
 
     public ClientInformation(){
     }
 
-    public ClientInformation(int roomNumber, int beginTime, int endTime, String password) {
+    public ClientInformation(ReceptionCodeAnswer codeAnswer, int roomNumber, int beginTime, int endTime, String password) {
         this.roomNumber = roomNumber;
         this.beginTime = beginTime;
         this.endTime = endTime;
         this.password = password;
+        this.codeAnswer=codeAnswer;
     }
 
     public String getPassword() {
@@ -46,5 +48,13 @@ public class ClientInformation {
 
     public void setEndTime(int endTime) {
         this.endTime = endTime;
+    }
+
+    public ReceptionCodeAnswer getCodeAnswer() {
+        return codeAnswer;
+    }
+
+    public void setCodeAnswer(ReceptionCodeAnswer codeAnswer) {
+        this.codeAnswer = codeAnswer;
     }
 }

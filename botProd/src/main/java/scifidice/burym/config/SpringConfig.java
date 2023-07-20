@@ -6,6 +6,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ViewResolverRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -13,7 +14,6 @@ import org.thymeleaf.spring5.SpringTemplateEngine;
 import org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver;
 import org.thymeleaf.spring5.view.ThymeleafViewResolver;
 
-import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 import java.time.ZoneId;
 
@@ -28,6 +28,12 @@ public class SpringConfig implements WebMvcConfigurer {
     @Autowired
     public SpringConfig(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
+    }
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**");
+
     }
 
     @Bean
@@ -54,9 +60,13 @@ public class SpringConfig implements WebMvcConfigurer {
         registry.viewResolver(resolver);
     }
 
-    public static final int daysPerWeek=7;
-    public static final int hoursPerDay=24;
-    public static final ZoneId NSKZoneId = ZoneId.of("GMT+7");
+    public static final int DAYS_PER_WEEK =7;
+    public static final int HOURS_PER_DAY =24;
+    public static final ZoneId NSK_ZONE_ID = ZoneId.of("GMT+7");
+    public static final String NOTIFY_TIME_MESSAGE = "У вас осталось 15 минут, пожалуйста по истечению времени покиньте комнату, " +
+            "не создавайте неудобств следующим гостям.";
+    public static final String NOTIFY_MANY_PEOPLE = "В комнате больше человек, чем было заявлено. Доплатите, иначе будет вызвана охрана.";
+    public static final String WARNING_TIME_MESSAGE = "Ваше время вышло, пожалуйста, покиньте помещение!";
 
     //@Value("${roomNumber}")
     public int roomNumber=5;

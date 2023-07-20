@@ -25,33 +25,32 @@ public class BookBotController {
 
     @GetMapping(value = "/getDate")
     @ResponseBody
-    public DateResponse getDate(@RequestParam("dateStr") String dateStr) {     //тут обязательно нужны параметры, если не стоит required=false
+    private DateResponse getDate(@RequestParam("dateStr") String dateStr) {     //тут обязательно нужны параметры, если не стоит required=false
         try {
-            System.out.println(dateStr);
+            System.out.println("DATE REQUEST: " + dateStr);
             LocalDate date = CheckValid.getDateObject(dateStr); // проверка даты на валидность
             ArrayList<RoomScheduleForDay> rooms =  bookingBotDataBaseHandler.getScheduleForDate((int) dayNumberRelativeToToday(date));
             StringBuilder dateAns = handler.dateHandler(rooms); //TODO распарсить
-            System.out.println(dateAns);
             return new DateResponse(0, dateAns.toString());
         }
         catch(DateTimeParseException e) {
-            System.out.println(dateStr + " is not valid date.");
+            System.out.println("DATE REQUEST: " + dateStr + " is not valid date.");
             return new DateResponse(-1, "");
         }
     }
 
     @PostMapping( "/postReservation")
     @ResponseBody
-    public ReservationResponse postReservation(@RequestBody ReservationRequest reservationRequest) {
+    private ReservationResponse postReservation(@RequestBody ReservationRequest reservationRequest) {
         try {
-            System.out.println(reservationRequest.getUserId() + " " + reservationRequest.getDateStr() + " " + reservationRequest.getRoom() + " " + reservationRequest.getHours());
+            System.out.println("RESERVATION REQUEST: " + reservationRequest.getUserId() + ", " + reservationRequest.getDateStr() + ", " + reservationRequest.getRoom() + ", " + reservationRequest.getHours());
             int[] hours = CheckValid.checkHours(reservationRequest.getHours()); // проверка валидности часов
             int id = bookingBotDataBaseHandler.book(reservationRequest.getUserId(), CheckValid.getDateObject(reservationRequest.getDateStr()),
                                             CheckValid.getDateObject(reservationRequest.getDateStr()), hours[0], hours[1], reservationRequest.getRoom());
             if (id == -1) {
                 throw new RuntimeException();
             }
-            System.out.println("book id: " + id);
+            System.out.println("RESERVATION RESPONSE book id: " + id);
             //TODO запись в БД и просить ID брони
             return new ReservationResponse(0, Integer.toString(id));
         } catch (Exception e) {
@@ -61,14 +60,29 @@ public class BookBotController {
 
     @GetMapping( "/postPhone")
     @ResponseBody
-    public String postPhone(@RequestParam("phone") String phone, @RequestParam("chatId") String bookingChatId) {
-        System.out.println("Phone: " + phone + ", chatId: " + bookingChatId);
+    private int postPhone(@RequestParam("phone") String phone, @RequestParam("chatId") String bookingChatId) {
+        System.out.println("NEW USER FROM BOOKING: Phone: " + phone + ", chatId: " + bookingChatId);
         try {
-            bookingBotDataBaseHandler.authorization(phone, bookingChatId);
-            return "0";
+            bookingBotDataBaseHandler.authorization(phone.substring(1), bookingChatId);
+            return 0;
         }
         catch (DataAccessException e) {
-            return "-1";
+            return -1;
         }
     }
+
+    @GetMapping( "/changePhone")
+    @ResponseBody
+    private int changePhone(@RequestParam("phone") String phone, @RequestParam("chatId") String bookingChatId) {
+        try {
+            int ans = bookingBotDataBaseHandler.updatePhoneNumberByBookingBotChatID(phone.substring(1), bookingChatId);
+            System.out.println(ans);
+            return ans;
+        }
+        catch (DataAccessException e) {
+            System.out.println("changePhoneException");
+            return -1;
+        }
+    }
+
 }

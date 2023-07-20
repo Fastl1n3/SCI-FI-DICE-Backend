@@ -1,37 +1,38 @@
 package scifidice.burym.controllers;
 
-import scifidice.burym.infoBot.RestService;
+import org.springframework.dao.DataAccessException;
 import scifidice.burym.infoBot.StringResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import scifidice.levachev.DataBaseHandler.InformationBotDataBaseHandler;
 
 @RestController
 @RequestMapping("/info")
 public class InfoBotController {
-
     @Autowired
-    private RestService restService;
+    private InformationBotDataBaseHandler informationBotDataBaseHandler;
 
     @GetMapping(value = "/postChatId")
     @ResponseBody
-    public ResponseEntity<String> postChatID(@RequestParam("phone") String phone, @RequestParam("chatId") int chatId) {     //тут обязательно нужны параметры, если не стоит required=false
-        System.out.println(phone + " user id: " + chatId);
-        restService.sendMessageToInfoBot(532823299);
-        return ResponseEntity.ok("SUCCESS");
+    private ResponseEntity<Integer> postChatID(@RequestParam("phone") String phone, @RequestParam("chatId") String chatId) {     //тут обязательно нужны параметры, если не стоит required=false
+        System.out.println("NEW USER FROM INFO: " + phone + " user id: " + chatId);
+        int a = -1;
+        try {
+            a = informationBotDataBaseHandler.authorization(phone, chatId);
+            System.out.println(a);
+            return ResponseEntity.ok(a);
+        }
+        catch (DataAccessException e) {
+            return ResponseEntity.ok(a);
+        }
     }
 
     @GetMapping(value = "/getRules")
     @ResponseBody
-    public ResponseEntity<StringResponse> getRules(@RequestParam("gameId") int gameId) {     //тут обязательно нужны параметры, если не стоит required=false
+    private ResponseEntity<StringResponse> getRules(@RequestParam("gameId") int gameId) {     //тут обязательно нужны параметры, если не стоит required=false
         System.out.println("Game ID: " + gameId);
-        //TODO даем gameId нам возвращается в строку ее правила
-        String ans = switch (gameId) {
-            case 1 -> "Жопа";
-            case 2 -> "Игра для обмазывания в масле";
-            case 3 -> "Для двух игроков на весь день";
-            default -> "Жесть какая-то";
-        };
+        String ans = informationBotDataBaseHandler.getRules(gameId);
         return ResponseEntity.ok(new StringResponse(ans));
     }
 }

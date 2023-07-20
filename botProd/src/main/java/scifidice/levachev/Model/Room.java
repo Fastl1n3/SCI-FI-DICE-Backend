@@ -2,12 +2,12 @@ package scifidice.levachev.Model;
 
 import java.util.Arrays;
 
-import static scifidice.burym.config.SpringConfig.daysPerWeek;
-import static scifidice.burym.config.SpringConfig.hoursPerDay;
+import static scifidice.burym.config.SpringConfig.DAYS_PER_WEEK;
+import static scifidice.burym.config.SpringConfig.HOURS_PER_DAY;
 
 public class Room {
     private int number;
-    private Boolean[] schedule = new Boolean[hoursPerDay* daysPerWeek];
+    private Boolean[] schedule = new Boolean[HOURS_PER_DAY * DAYS_PER_WEEK];
 
     private String password;
 

@@ -17,9 +17,8 @@ public class InformationBotDataBaseHandler {
         this.jdbcTemplateGamesDB = jdbcTemplateGamesDB;
     }
 
-    public boolean authorization(String phoneNumber, String infoBotChatID){
-        updatePerson(phoneNumber, infoBotChatID);
-        return true;
+    public int authorization(String phoneNumber, String infoBotChatID){
+        return updatePerson(phoneNumber, infoBotChatID);
     }
 
     public String getRules(int gameID){
@@ -33,8 +32,8 @@ public class InformationBotDataBaseHandler {
         }
     }
 
-    private void updatePerson(String phoneNumber, String infoBotChatID){
-        jdbcTemplateOrganisationDB.update("UPDATE Person SET infobotchatid=? WHERE phoneNumber=?",
+    private int updatePerson(String phoneNumber, String infoBotChatID){
+        return jdbcTemplateOrganisationDB.update("UPDATE Person SET infobotchatid=? WHERE phoneNumber=?",
                 infoBotChatID, phoneNumber);
     }
 }

@@ -1,20 +1,22 @@
 package scifidice.levachev.DataBaseHandler;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import scifidice.levachev.Mapper.RoomMapper;
+import scifidice.levachev.Mapper.BookingMapper;
+import scifidice.levachev.Mapper.GameMapper;
+
 import scifidice.levachev.Model.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+
+import static scifidice.burym.config.SpringConfig.NSK_ZONE_ID;
 
 @Component
 public class ReceptionDataBaseHandler extends DataBaseEntityAdder{
     private Booking lastBooking;
-    private boolean isLate;
     private final JdbcTemplate jdbcTemplateGamesDB;
     private final JdbcTemplate jdbcTemplateOrganisationDB;
 
@@ -26,7 +28,7 @@ public class ReceptionDataBaseHandler extends DataBaseEntityAdder{
 
     public ReceptionCodeAnswer isBookingNumberValid(int bookingNumber) {
         lastBooking = jdbcTemplateOrganisationDB.query("SELECT * FROM Booking WHERE bookingNumber=?",
-                        new Object[]{bookingNumber}, new BeanPropertyRowMapper<>(Booking.class))
+                        new Object[]{bookingNumber}, new BookingMapper())
                 .stream().findAny().orElse(null);
         if(lastBooking == null){
             return ReceptionCodeAnswer.INVALID_ID;
@@ -37,22 +39,6 @@ public class ReceptionDataBaseHandler extends DataBaseEntityAdder{
         return ReceptionCodeAnswer.SUCCESS;
     }
 
-    private boolean isAfter(LocalDate date, int hour){
-        LocalDateTime localDateTime = LocalDateTime.of(date,
-                LocalTime.of(hour, 0, 0, 0));
-        LocalDateTime localDateTimeNow = LocalDateTime.now();
-
-        return localDateTime.isAfter(localDateTimeNow);
-    }
-
-    private boolean isBefore(LocalDate date, int hour){
-        LocalDateTime localDateTime = LocalDateTime.of(date,
-                LocalTime.of(hour, 0, 0, 0));
-        LocalDateTime localDateTimeNow = LocalDateTime.now();
-
-        return localDateTime.isBefore(localDateTimeNow);
-    }
-
     private boolean isWrongTime(){
         LocalDateTime beginTime = LocalDateTime.of(lastBooking.getBeginDate(),
                 LocalTime.of(lastBooking.getBeginTime(), 0, 0, 0));
@@ -60,77 +46,68 @@ public class ReceptionDataBaseHandler extends DataBaseEntityAdder{
         LocalDateTime endTime = LocalDateTime.of(lastBooking.getEndDate(),
                 LocalTime.of(lastBooking.getEndTime(), 0, 0, 0));
 
-        LocalDateTime nowTime = LocalDateTime.now();
-
+        LocalDateTime nowTime = LocalDateTime.now(NSK_ZONE_ID);
+	
         LocalDateTime under20BeginTime = beginTime.minusMinutes(20);
+	    System.out.println("under20BeginTime: " + under20BeginTime);
+	    System.out.println("nowTime: " + nowTime );
+	    System.out.println("endTime: " + endTime );
+	    System.out.println("boolean " + !nowTime.isBefore(under20BeginTime) + " " + !nowTime.isAfter(endTime));
+ 
 
-        if(nowTime.isBefore(under20BeginTime) || nowTime.isAfter(endTime)){
-            return false;
-        } else if(nowTime.isBefore(beginTime)){
-            isLate = false;
-            return true;
-        } else {
-            isLate = true;
-            return true;
-        }
+        return !nowTime.isBefore(under20BeginTime) && !nowTime.isAfter(endTime);
     }
 
-    /*private boolean isWrongTime(){
-        if(lastBooking.getBeginTime() == 0){
-            if(!lastBooking.getBeginDate().equals(LocalDate.now())){
-                if(dayNumberRelativeToToday(lastBooking.getBeginDate()) == 1){
-                    return isInTimeWindow();
-                } else {
-                    return false;
-                }
-            } else {
-                return false;
-            }
-        } else{
-            if(lastBooking.getBeginDate().equals(LocalDate.now())){
-                return isInTimeWindow();
-            } else {
-                return false;
-            }
-        }
+  
+    private boolean isGameIDValid(int id){
+        Game game = jdbcTemplateGamesDB.query("SELECT * FROM Games WHERE id=?",
+                        new Object[]{id}, new GameMapper())
+                .stream().findAny().orElse(null);
+        return game != null;
     }
-
-    private boolean isInTimeWindow(){
-        int currentHour = LocalDateTime.now(NSKZoneId).getHour();
-        int currentMinute = LocalDateTime.now(NSKZoneId).getMinute();
-
-        if(currentHour == lastBooking.getBeginTime()){
-            return currentHour <= 20;
-        } else if((currentHour+1)%hoursPerDay == lastBooking.getBeginTime()){
-            return currentMinute >= 40;
-        }
-        return false;
-    }*/
 
     public ClientInformation payBooking(int gameID, int peopleNumber) {
-        Room room = getRoom(lastBooking);
-        if(room == null){
-            return null;
+        if(!isGameIDValid(gameID)){
+            return new ClientInformation(
+                    ReceptionCodeAnswer.INVALID_GAME_ID, 0, 0, 0, null
+            );
         }
+
+        if(!pay()){
+            return new ClientInformation(
+                    ReceptionCodeAnswer.FAILED_PAY, 0, 0, 0, null
+            );
+        }
+
+        Room room = getRoom(lastBooking);
 
         takeGame(gameID);
 
         updateGameIDInBookingEntry(gameID);
 
-        if(isLate) {
+        if(isLate()) {
             updateCurrentPeopleNumberByRoomNumber(lastBooking.getRoomNumber(), peopleNumber);
         } else{
             updateRoomDataByRoomNumber(lastBooking.getRoomNumber(), peopleNumber);
         }
 
-        if(!pay()){
-            return null;
-        }
-
-        return new ClientInformation(lastBooking.getRoomNumber(),
+        return new ClientInformation(ReceptionCodeAnswer.SUCCESS, lastBooking.getRoomNumber(),
                 lastBooking.getBeginTime(), lastBooking.getEndTime(),
                 room.getPassword());
     }
+
+    private boolean isLate(){
+        LocalDateTime beginTime = LocalDateTime.of(lastBooking.getBeginDate(),
+                LocalTime.of(lastBooking.getBeginTime(), 0, 0, 0));
+
+        LocalDateTime endTime = LocalDateTime.of(lastBooking.getEndDate(),
+                LocalTime.of(lastBooking.getEndTime(), 0, 0, 0));
+
+        LocalDateTime nowTime = LocalDateTime.now(NSK_ZONE_ID);
+
+        return !nowTime.isBefore(beginTime);
+    }
+
 
     private Room getRoom(Booking booking){
         return jdbcTemplateOrganisationDB.query("SELECT * FROM Room WHERE number=?",
@@ -144,12 +121,12 @@ public class ReceptionDataBaseHandler extends DataBaseEntityAdder{
     }
 
     private void updateRoomDataByRoomNumber(int roomNumber, int peopleNumber){
-        jdbcTemplateOrganisationDB.update("UPDATE bufferRoomData SET peopleNumber=?, \"isShouldChange\"=? WHERE roomNumber=?",
+        jdbcTemplateOrganisationDB.update("UPDATE bufferRoomData SET peopleNumber=?, isShouldChange=? WHERE roomNumber=?",
                 peopleNumber, true, roomNumber);
     }
 
     private void updateCurrentPeopleNumberByRoomNumber(int roomNumber, int currentPeopleNumber){
-        jdbcTemplateOrganisationDB.update("UPDATE Room SET currentPeopleNumber=? WHERE number=?",
+        jdbcTemplateOrganisationDB.update("UPDATE Room SET currentPersonNumber=? WHERE number=?",
                 currentPeopleNumber, roomNumber);
     }
 
