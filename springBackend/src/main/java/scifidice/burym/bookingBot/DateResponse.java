@@ -5,11 +5,14 @@ package scifidice.burym.bookingBot;
 public class DateResponse {
     private int codeAnswer;
     private String dateStr;
+
     public DateResponse() {}
+
     public DateResponse(int codeAnswer, String date) {
         this.codeAnswer = codeAnswer;
         this.dateStr = date;
     }
+
     public int getCodeAnswer() {
         return codeAnswer;
     }

@@ -1,6 +1,5 @@
 package scifidice.levachev.Model;
 
-
 import java.time.LocalDate;
 
 public class Booking {

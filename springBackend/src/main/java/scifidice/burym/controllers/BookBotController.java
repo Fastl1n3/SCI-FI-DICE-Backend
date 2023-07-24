@@ -56,17 +56,18 @@ public class BookBotController {
             System.out.println(LocalDateTime.now(NSK_ZONE_ID) +" RESERVATION REQUEST: user: " + reservationRequest.getUserId() + ", d: " + reservationRequest.getDateStr() + ", r: " + reservationRequest.getRoom() + ", h: " + reservationRequest.getHours());
             adminController.sendMessageToAdmin(LocalDateTime.now(NSK_ZONE_ID) +" RESERVATION REQUEST: user: " + reservationRequest.getUserId() + ", d: "
                     + reservationRequest.getDateStr() + ", r: " + reservationRequest.getRoom() + ", h: " + reservationRequest.getHours() + ".");
-            int[] hours = CheckValid.checkHours(reservationRequest.getHours()); // проверка валидности часов
+            int[] hours = CheckValid.getHours(reservationRequest.getHours()); // проверка валидности часов
             int id = bookingBotDataBaseHandler.book(reservationRequest.getUserId(), CheckValid.getDateObject(reservationRequest.getDateStr()),
                                             CheckValid.getDateObject(reservationRequest.getDateStr()), hours[0], hours[1], reservationRequest.getRoom());
             if (id == -1) {
-                throw new RuntimeException();
+                throw new RuntimeException("id = -1");
             }
             System.out.println(LocalDateTime.now(NSK_ZONE_ID) + " RESERVATION RESPONSE: book id: " + id + ", user: " + reservationRequest.getUserId());
             adminController.sendMessageToAdmin(LocalDateTime.now(NSK_ZONE_ID) + " RESERVATION RESPONSE: book id: " + id + ", user: "
                     + reservationRequest.getUserId() + ".");
             return new ReservationResponse(0, Integer.toString(id));
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             return new ReservationResponse(-1, "");
         }
     }
@@ -76,7 +77,7 @@ public class BookBotController {
     private int postPhone(@RequestParam("phone") String phone, @RequestParam("chatId") String bookingChatId) {
         System.out.println(LocalDateTime.now(NSK_ZONE_ID) + " NEW USER FROM BOOKING: phone: " + phone + ", chat id: " + bookingChatId +".");
         try {
-            bookingBotDataBaseHandler.authorization(phone.substring(1), bookingChatId);
+            bookingBotDataBaseHandler.authorization(phone, bookingChatId);
             adminController.sendMessageToAdmin(LocalDateTime.now(NSK_ZONE_ID) + " NEW USER FROM BOOKING: phone: "
                     + phone + ", chat id: " + bookingChatId + " - SUCCESS.");
             return 0;

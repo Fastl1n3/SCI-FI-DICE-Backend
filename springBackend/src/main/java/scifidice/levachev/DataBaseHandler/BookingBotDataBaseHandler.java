@@ -5,11 +5,16 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import scifidice.levachev.Mapper.PersonMapper;
+import scifidice.levachev.Mapper.RoomMapper;
 import scifidice.levachev.Model.Booking;
 import scifidice.levachev.Model.Person;
 import scifidice.levachev.Model.Room;
 import scifidice.levachev.Model.RoomScheduleForDay;
-import scifidice.levachev.Mapper.RoomMapper;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static java.lang.Math.abs;
 import static java.time.temporal.ChronoUnit.DAYS;
@@ -17,11 +22,6 @@ import static scifidice.burym.config.SpringConfig.HOURS_PER_DAY;
 import static scifidice.burym.config.SpringConfig.NSK_ZONE_ID;
 import static scifidice.levachev.DataBaseHandler.AutoUpdatableDataBaseHandler.addToTodayBeginBookingList;
 import static scifidice.levachev.DataBaseHandler.AutoUpdatableDataBaseHandler.addToTodayEndBookingList;
-
-import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.List;
 
 @Component
 public class BookingBotDataBaseHandler extends DataBaseEntityAdder {
@@ -42,11 +42,13 @@ public class BookingBotDataBaseHandler extends DataBaseEntityAdder {
 
     public int book(String bookingChatID, LocalDate beginDate, LocalDate endDate, int beginTime, int endTime, int roomNumber){
         if(!isBookingValid(beginDate, endDate, beginTime, endTime, roomNumber)){
+            System.out.println("Not valid booking");
             return -1;
         }
 
         String phoneNumber = getPhoneNumberByBookingChatID(bookingChatID);
         if(phoneNumber == null){
+            System.out.println("Not valid phone");
             return -1;
         }
 
@@ -65,6 +67,8 @@ public class BookingBotDataBaseHandler extends DataBaseEntityAdder {
             }
             updateRoomSchedule(booking.getRoomNumber(), booking.getBeginDate(), booking.getEndDate(), booking.getBeginTime(), booking.getEndTime());
         } catch (DataAccessException e){
+            System.out.println("!@#!@@$!");
+            System.out.println(e.getMessage());
             return -1;
         }
         return bookingNumber;

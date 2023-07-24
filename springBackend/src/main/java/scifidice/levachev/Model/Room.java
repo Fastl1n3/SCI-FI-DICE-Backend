@@ -1,7 +1,6 @@
 package scifidice.levachev.Model;
 
 import java.util.Arrays;
-
 import static scifidice.burym.config.SpringConfig.DAYS_PER_WEEK;
 import static scifidice.burym.config.SpringConfig.HOURS_PER_DAY;
 

@@ -2,7 +2,6 @@ package scifidice.levachev.Mapper;
 
 import org.springframework.jdbc.core.RowMapper;
 import scifidice.levachev.Model.BufferRoomData;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 

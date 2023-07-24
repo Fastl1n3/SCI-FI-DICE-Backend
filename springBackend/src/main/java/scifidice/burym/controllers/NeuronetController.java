@@ -41,14 +41,11 @@ public class NeuronetController {
                CheckPeopleInformation peopleInfo = optPeopleInfo.get();
                if (peopleInfo.isViolate()) {
                    if (peopleInfo.isInExitWindow()) {
-                       //Тревога
-                       //TODO слать админу
                        System.out.println("ТРЕВОГА В ОКНЕ");
                        adminController.sendMessageToAdmin(LocalDateTime.now(NSK_ZONE_ID) + " PEOPLE AFTER TIMEOUT!!! in room #" + room +
                                "count: " + people + ".");
                    }
                    else {
-                       //Много чел
                        System.out.println(LocalDateTime.now(NSK_ZONE_ID) + " МНОГО ЧЕЛ");
                        if (startTime == null) {
                            startTime = LocalTime.now(NSK_ZONE_ID);

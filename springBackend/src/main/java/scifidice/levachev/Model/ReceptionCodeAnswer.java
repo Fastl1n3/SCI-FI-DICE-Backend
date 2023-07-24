@@ -7,5 +7,5 @@ public enum ReceptionCodeAnswer {
     INVALID_GAME_ID,
     FAILED_PAY,
     ILLEGAL_PEOPLE_NUMBER,
-    NOT_PAID
+    PAID
 }

@@ -1,5 +1,4 @@
 package scifidice.levachev.Model;
-
 public class Game {
     private int id;
     private String name;

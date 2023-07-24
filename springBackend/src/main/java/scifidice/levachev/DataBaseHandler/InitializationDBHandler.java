@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.util.ResourceUtils;
 import scifidice.levachev.Model.*;
-
 import java.io.IOException;
 import java.util.List;
 
@@ -26,7 +25,7 @@ public class InitializationDBHandler extends DataBaseEntityAdder{
         initRoomTable();
     }
 
-    public void initGamesTable() throws IOException {
+    private void initGamesTable() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
 
         GamesResponse gamesResponse= objectMapper.readValue(ResourceUtils.getFile("/home/scifidice/BotProd/src/main/resources/config.json"), GamesResponse.class);
@@ -37,7 +36,7 @@ public class InitializationDBHandler extends DataBaseEntityAdder{
         }
     }
 
-    public void initRoomTable() throws IOException {
+    private void initRoomTable() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
 
         RoomsResponse roomsResponse= objectMapper.readValue(ResourceUtils.getFile("/home/scifidice/BotProd/src/main/resources/config.json"), RoomsResponse.class);

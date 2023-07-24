@@ -7,12 +7,9 @@ import scifidice.levachev.Mapper.BufferRoomDataMapper;
 import scifidice.levachev.Mapper.RoomMapper;
 import scifidice.levachev.Mapper.BookingMapper;
 import scifidice.levachev.Mapper.GameMapper;
-
 import scifidice.levachev.Model.*;
-
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-
 import static scifidice.burym.config.SpringConfig.NSK_ZONE_ID;
 import static scifidice.burym.config.SpringConfig.maxPeopleNumber;
 
@@ -28,7 +25,7 @@ public class ReceptionDataBaseHandler extends DataBaseEntityAdder{
         this.jdbcTemplateGamesDB = jdbcTemplateGamesDB;
     }
 
-    public ReceptionCodeAnswer isBookingNumberValid(int bookingNumber, ReceptionOperation operation) {
+    public ReceptionCodeAnswer isBookingNumberValid(int bookingNumber) {
         lastBooking = jdbcTemplateOrganisationDB.query("SELECT * FROM Booking WHERE bookingNumber=?",
                         new Object[]{bookingNumber}, new BookingMapper())
                 .stream().findAny().orElse(null);
@@ -38,8 +35,8 @@ public class ReceptionDataBaseHandler extends DataBaseEntityAdder{
         if(!isWrongTime()){
             return ReceptionCodeAnswer.WRONG_DATE;
         }
-        if(operation == ReceptionOperation.ADD_PERSON && !lastBooking.isPaid()){
-            return ReceptionCodeAnswer.NOT_PAID;
+        if(lastBooking.isPaid()){
+            return ReceptionCodeAnswer.PAID;
         }
         return ReceptionCodeAnswer.SUCCESS;
     }
@@ -54,11 +51,6 @@ public class ReceptionDataBaseHandler extends DataBaseEntityAdder{
         LocalDateTime nowTime = LocalDateTime.now(NSK_ZONE_ID);
 	
         LocalDateTime under20BeginTime = beginTime.minusMinutes(20);
-	    System.out.println("under20BeginTime: " + under20BeginTime);
-	    System.out.println("nowTime: " + nowTime );
-	    System.out.println("endTime: " + endTime );
-	    System.out.println("boolean " + !nowTime.isBefore(under20BeginTime) + " " + !nowTime.isAfter(endTime));
- 
 
         return !nowTime.isBefore(under20BeginTime) && !nowTime.isAfter(endTime);
     }
@@ -88,7 +80,7 @@ public class ReceptionDataBaseHandler extends DataBaseEntityAdder{
 
         takeGame(gameID);
 
-        updateGameIDInBookingEntry(gameID);
+        updateBookingEntry(gameID, true);
 
         if(isLate()) {
             updateCurrentPeopleNumberByRoomNumber(lastBooking.getRoomNumber(), peopleNumber);
@@ -155,9 +147,9 @@ public class ReceptionDataBaseHandler extends DataBaseEntityAdder{
     }
 
 
-    private void updateGameIDInBookingEntry(int gameID){
-        jdbcTemplateOrganisationDB.update("UPDATE Booking SET gameID=? WHERE bookingNumber=?",
-                gameID, lastBooking.getBookingNumber());
+    private void updateBookingEntry(int gameID, boolean isPaid){
+        jdbcTemplateOrganisationDB.update("UPDATE Booking SET gameID=?, ispaid=? WHERE bookingNumber=?",
+                gameID, isPaid, lastBooking.getBookingNumber());
     }
 
     private void updateRoomDataByRoomNumber(int roomNumber, int peopleNumber){

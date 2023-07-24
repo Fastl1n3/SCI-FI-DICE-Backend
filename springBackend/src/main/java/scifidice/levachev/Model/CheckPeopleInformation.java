@@ -4,11 +4,13 @@ public class CheckPeopleInformation {
     private String infoBotChatID;
     private boolean inExitWindow;
     private boolean isViolate;
+    private String phoneNumber;
 
-    public CheckPeopleInformation(String infoBotChatID, boolean inExitWindow, boolean isViolate) {
+    public CheckPeopleInformation(String infoBotChatID, boolean inExitWindow, boolean isViolate, String phoneNumber) {
         this.infoBotChatID = infoBotChatID;
         this.inExitWindow = inExitWindow;
         this.isViolate=isViolate;
+        this.phoneNumber=phoneNumber;
     }
 
     public CheckPeopleInformation(){
@@ -36,5 +38,13 @@ public class CheckPeopleInformation {
 
     public void setViolate(boolean violate) {
         isViolate = violate;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 }

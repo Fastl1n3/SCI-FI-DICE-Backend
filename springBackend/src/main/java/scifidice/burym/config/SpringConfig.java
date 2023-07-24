@@ -105,24 +105,20 @@ public class SpringConfig implements WebMvcConfigurer {
     @Bean
     public DataSource dataSourceOrganisationDB(){
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
-
         dataSource.setDriverClassName(DBDriver);
         dataSource.setUrl(organisationDBUrl);
         dataSource.setUsername(organisationDBUsername);
         dataSource.setPassword(organisationDBPassword);
-
         return dataSource;
     }
 
     @Bean
     public DataSource dataSourceGamesDB(){
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
-
         dataSource.setDriverClassName(DBDriver);
         dataSource.setUrl(gamesDBUrl);
         dataSource.setUsername(gamesDBUsername);
         dataSource.setPassword(gamesDBPassword);
-
         return dataSource;
     }
 
@@ -135,5 +131,4 @@ public class SpringConfig implements WebMvcConfigurer {
     public JdbcTemplate jdbcTemplateGamesDB(){
         return new JdbcTemplate(dataSourceGamesDB());
     }
-
 }

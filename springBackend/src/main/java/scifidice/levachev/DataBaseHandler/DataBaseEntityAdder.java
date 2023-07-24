@@ -1,6 +1,5 @@
 package scifidice.levachev.DataBaseHandler;
 
-
 import org.springframework.jdbc.core.JdbcTemplate;
 import scifidice.levachev.Model.*;
 

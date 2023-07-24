@@ -20,14 +20,14 @@ public class CheckValid {
         return date;
     }
 
-    public static int[] checkHours(String hoursStr) throws RuntimeException {
+    public static int[] getHours(String hoursStr) throws RuntimeException {
         Pattern twopart = Pattern.compile("(\\d{1,2})-(\\d{1,2})");
         Matcher m = twopart.matcher(hoursStr);
         if (!m.matches()) {
             throw new RuntimeException("Invalid hours");
         }
         int[] intHours = new int[]{Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2))};
-        if (intHours[0] < 0 || intHours[0] > 23 || intHours[1] <= intHours[0] || intHours[1] > 23) {
+        if (intHours[0] < 0 || intHours[0] > 23 || intHours[1] <= intHours[0] || intHours[1] > 24) {
             throw new RuntimeException("Invalid hours");
         }
         return intHours;

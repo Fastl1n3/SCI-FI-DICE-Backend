@@ -2,11 +2,13 @@ package scifidice.burym.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
 import scifidice.levachev.DataBaseHandler.ReceptionDataBaseHandler;
 import scifidice.levachev.Model.ClientInformation;
 import scifidice.levachev.Model.ReceptionCodeAnswer;
-import scifidice.levachev.Model.ReceptionOperation;
+
+import java.time.LocalDateTime;
+
+import static scifidice.burym.config.SpringConfig.NSK_ZONE_ID;
 
 
 @RestController
@@ -16,10 +18,13 @@ public class ReceptionController {
     @Autowired
     private ReceptionDataBaseHandler receptionDataBaseHandler;
 
-    static class ResponseIsValid {
+    @Autowired
+    private AdminController adminController;
+
+    static class ResponseReception {
         private String message;
-        ResponseIsValid() {}
-        ResponseIsValid(String message) {
+        ResponseReception() {}
+        ResponseReception(String message) {
             this.message = message;
         }
         public String getMessage() {
@@ -32,21 +37,29 @@ public class ReceptionController {
 
     @GetMapping(value = "/postId")
     @ResponseBody
-    public ResponseIsValid postId(@RequestParam("bookId") int bookId, @RequestParam("codeOperation") String strCode) {
-        ReceptionCodeAnswer receptionCodeAnswer = receptionDataBaseHandler.isBookingNumberValid(bookId, ReceptionOperation.valueOf(strCode));
-        System.out.println("RECEPTION ID: " + + bookId +" " + ReceptionOperation.valueOf(strCode));
-        return new ResponseIsValid(receptionCodeAnswer.toString());
+    public ResponseReception postId(@RequestParam("bookId") int bookId) {
+        ReceptionCodeAnswer receptionCodeAnswer = receptionDataBaseHandler.isBookingNumberValid(bookId);
+        System.out.println(LocalDateTime.now(NSK_ZONE_ID) + " RECEPTION: booking id: " + + bookId + ".");
+        adminController.sendMessageToAdmin(LocalDateTime.now(NSK_ZONE_ID) + " RECEPTION: booking id: " + + bookId + ".");
+        return new ResponseReception(receptionCodeAnswer.toString());
     }
 
     @GetMapping(value = "/postPayData")
     @ResponseBody
     public ClientInformation postPayData(@RequestParam("people") int people, @RequestParam("gameId") int gameId) {
-        return receptionDataBaseHandler.payBooking(gameId, people);
+        ClientInformation clientInformation = receptionDataBaseHandler.payBooking(gameId, people);
+        System.out.println(LocalDateTime.now(NSK_ZONE_ID) + " RECEPTION: people: " + people + ", gameId: " + gameId
+                + ", " + clientInformation.getCodeAnswer() + " sT: " + clientInformation.getBeginTime() + ", eT: " + clientInformation.getEndTime());
+        adminController.sendMessageToAdmin(LocalDateTime.now(NSK_ZONE_ID) + " RECEPTION: people: " + people + ", gameId: " + gameId
+                + ", " + clientInformation.getCodeAnswer() + " sT: " + clientInformation.getBeginTime() + ", eT: " + clientInformation.getEndTime());
+        return clientInformation;
     }
 
     @GetMapping(value = "/addPeople")
     @ResponseBody
-    public ReceptionCodeAnswer addPeople(@RequestParam("people") int people) {
-        return receptionDataBaseHandler.addPeople(people);
+    public ResponseReception addPeople(@RequestParam("people") int people) {
+        ReceptionCodeAnswer receptionCodeAnswer = receptionDataBaseHandler.addPeople(people);
+        adminController.sendMessageToAdmin(LocalDateTime.now(NSK_ZONE_ID) + " RECEPTION ADD: people: " + people + ", " + receptionCodeAnswer);
+        return new ResponseReception(receptionCodeAnswer.toString());
     }
 }
