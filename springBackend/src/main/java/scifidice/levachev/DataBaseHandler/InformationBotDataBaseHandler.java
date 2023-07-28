@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import scifidice.levachev.Mapper.GameMapper;
 import scifidice.levachev.Model.Game;
+import java.util.List;
 
 @Component
 public class InformationBotDataBaseHandler {
@@ -30,6 +31,10 @@ public class InformationBotDataBaseHandler {
         } else{
             return game.getRules();
         }
+    }
+
+    public List<Game> getGames(){
+        return jdbcTemplateGamesDB.query("SELECT * FROM games ORDER BY id", new Object[]{}, new GameMapper());
     }
 
     private int updatePerson(String phoneNumber, String infoBotChatID){

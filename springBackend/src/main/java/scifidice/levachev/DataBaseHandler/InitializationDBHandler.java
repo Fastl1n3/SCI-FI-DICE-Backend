@@ -5,6 +5,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.util.ResourceUtils;
+import scifidice.levachev.Mapper.BufferRoomDataMapper;
+import scifidice.levachev.Mapper.GameMapper;
+import scifidice.levachev.Mapper.RoomMapper;
 import scifidice.levachev.Model.*;
 import java.io.IOException;
 import java.util.List;
@@ -21,8 +24,29 @@ public class InitializationDBHandler extends DataBaseEntityAdder{
     }
 
     public void defaultInitialization() throws IOException {
-        initGamesTable();
-        initRoomTable();
+        if(isGameTableEmpty()) {
+            initGamesTable();
+        }
+        
+        if(isRoomTableEmpty()) {
+            initRoomTable();
+        }
+        
+        if(isBufferRoomDataTableEmpty()) {
+            initBufferRoomDataTable();
+        }
+    }
+
+    private boolean isRoomTableEmpty(){
+        return  jdbcTemplateOrganisationDB.query("SELECT * FROM Room", new RoomMapper()).isEmpty();
+    }
+
+    private boolean isBufferRoomDataTableEmpty(){
+        return  jdbcTemplateOrganisationDB.query("SELECT * FROM bufferRoomData", new BufferRoomDataMapper()).isEmpty();
+    }
+
+    private boolean isGameTableEmpty(){
+        return  jdbcTemplateGamesDB.query("SELECT * FROM Games", new GameMapper()).isEmpty();
     }
 
     private void initGamesTable() throws IOException {
@@ -45,6 +69,17 @@ public class InitializationDBHandler extends DataBaseEntityAdder{
 
         for (Room room : roomList){
             addRoomToTable(room, jdbcTemplateOrganisationDB);
+        }
+    }
+
+    private void initBufferRoomDataTable() throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        RoomsResponse roomsResponse= objectMapper.readValue(ResourceUtils.getFile("/home/scifidice/BotProd/src/main/resources/config.json"), RoomsResponse.class);
+
+        List<Room> roomList = roomsResponse.getRooms();
+
+        for (Room room : roomList){
             addRoomDataToTable(
                     new BufferRoomData(room.getNumber()), jdbcTemplateOrganisationDB
             );

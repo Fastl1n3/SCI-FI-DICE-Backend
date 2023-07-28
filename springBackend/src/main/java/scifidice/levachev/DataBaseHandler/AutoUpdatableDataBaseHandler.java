@@ -2,8 +2,8 @@ package scifidice.levachev.DataBaseHandler;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import scifidice.burym.infoBot.Notification;
 import scifidice.levachev.Mapper.BookingMapper;
@@ -11,13 +11,15 @@ import scifidice.levachev.Mapper.BufferRoomDataMapper;
 import scifidice.levachev.Mapper.PersonMapper;
 import scifidice.levachev.Mapper.RoomMapper;
 import scifidice.levachev.Model.*;
+
+import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.sql.Date;
 import java.util.Optional;
+
 import static java.time.temporal.ChronoUnit.MINUTES;
 import static scifidice.burym.config.SpringConfig.*;
 
@@ -25,12 +27,13 @@ import static scifidice.burym.config.SpringConfig.*;
 @Component
 @EnableScheduling
 public class AutoUpdatableDataBaseHandler{
-    private static List<Booking> todayEndBookingList = new ArrayList<>();
     private static List<Booking> todayBeginBookingList = new ArrayList<>();
-    
     private final JdbcTemplate jdbcTemplateGamesDB;
-    
+
     private final JdbcTemplate jdbcTemplateOrganisationDB;
+
+    @Autowired
+    private InfoSender infoSender;
 
     @Autowired
     private Notification notification;
@@ -41,16 +44,7 @@ public class AutoUpdatableDataBaseHandler{
         this.jdbcTemplateGamesDB = jdbcTemplateGamesDB;
     }
 
-    @Scheduled(cron = "0 5 0 * * *")
-    public void initTodayEndBookingList(){
-        todayEndBookingList = jdbcTemplateOrganisationDB.
-                query("SELECT * FROM Booking WHERE endDate=?",
-                        new Object[]{Date.valueOf(LocalDate.now(NSK_ZONE_ID))},
-                        new BookingMapper());
-        System.out.println("size " + todayEndBookingList.size());
-    }
-
-    @Scheduled(cron = "0 6 0 * * *")
+    @Scheduled(cron = "0 1 0 * * *")
     public void initTodayBeginBookingList(){
         todayBeginBookingList = jdbcTemplateOrganisationDB.
                 query("SELECT * FROM Booking WHERE beginDate=?",
@@ -75,14 +69,11 @@ public class AutoUpdatableDataBaseHandler{
         }
     }
 
-    public static void addToTodayEndBookingList(Booking booking){
-        todayEndBookingList.add(booking);
-    }
     public static void addToTodayBeginBookingList(Booking booking){
         todayBeginBookingList.add(booking);
     }
 
-    public Optional<CheckPeopleInformation> checkPeople(int roomNumber, int actualPeopleNumber, LocalTime takePictureTime) throws WrongRoomNumberException {
+    public Optional<CheckPeopleInformation> checkPeople(int roomNumber, int actualPeopleNumber, LocalDateTime takePictureTime) throws WrongRoomNumberException {
         Room room = jdbcTemplateOrganisationDB.query("SELECT * FROM Room WHERE number=?",
                         new Object[]{roomNumber}, new RoomMapper()).stream().findAny().
                 orElse(null);
@@ -92,13 +83,24 @@ public class AutoUpdatableDataBaseHandler{
 
         for (Booking booking : todayBeginBookingList) {
 
-            LocalTime bookingEndTime = LocalTime.of(booking.getEndTime(), 0, 0);
+            LocalDate endDate = booking.getEndDate();
+            int endTime = booking.getEndTime();
+            if(booking.getEndTime() == 24){
+                endTime = 0;
+                endDate = endDate.plusDays(1);
+            }
 
-            long diff = MINUTES.between(takePictureTime, bookingEndTime);
+            LocalDateTime bookingEndDateTime = LocalDateTime.of(endDate, LocalTime.of(endTime, 0, 0));
+            LocalDateTime bookingBeginDateTime = LocalDateTime.of(booking.getBeginDate(), LocalTime.of(booking.getBeginTime()%HOURS_PER_DAY, 0, 0));
 
-            if (booking.getBeginTime() <= takePictureTime.getHour() &&
-                    booking.getEndTime() >= takePictureTime.getHour() &&
-                    booking.getRoomNumber() == roomNumber) {
+            long diff = MINUTES.between(takePictureTime, bookingEndDateTime);
+
+            System.out.println("takePictureTime "+takePictureTime);
+            System.out.println("bookingBeginDateTime "+bookingBeginDateTime);
+            System.out.println("bookingEndDateTime "+bookingEndDateTime);
+            System.out.println("DIFF MIN: " + diff);
+            if(!takePictureTime.isBefore(bookingBeginDateTime) &&
+                takePictureTime.isBefore(bookingEndDateTime) && booking.getRoomNumber() == roomNumber){
 
                 CheckPeopleInformation checkPeopleInformation = new CheckPeopleInformation();
 
@@ -114,13 +116,9 @@ public class AutoUpdatableDataBaseHandler{
                     return Optional.empty();
                 }
 
-                if (diff < 5) {
-                    checkPeopleInformation.setInExitWindow(true);
-                    checkPeopleInformation.setViolate(actualPeopleNumber > 0);
-                } else {
-                    checkPeopleInformation.setInExitWindow(false);
-                    checkPeopleInformation.setViolate(actualPeopleNumber > room.getCurrentPeopleNumber());
-                }
+                checkPeopleInformation.setViolate(actualPeopleNumber > room.getCurrentPersonNumber() && booking.isPaid());
+                checkPeopleInformation.setInExitWindow(diff < 5);
+
                 return Optional.of(checkPeopleInformation);
             }
         }
@@ -131,23 +129,23 @@ public class AutoUpdatableDataBaseHandler{
         for(Booking booking : todayBeginBookingList){
             int currentHour = LocalDateTime.now(NSK_ZONE_ID).getHour();
             if(booking.getRoomNumber() == roomNumber &&
-            booking.getBeginTime()<=currentHour &&
-                    booking.getEndTime()>=currentHour){
+                    booking.getBeginTime()<=currentHour &&
+                    booking.getEndTime()>currentHour){
                 return booking.getPhoneNumber();
             }
         }
         return null;
     }
 
-    @Scheduled(cron = "0 7 * * * *")
+    @Scheduled(cron = "0 3 * * * *")
     public void deleteOverdueBooking(){
         System.out.println("deleteOverdueBooking");
-        
+
         int currentTime = LocalDateTime.now(NSK_ZONE_ID).getHour();
-        int size = todayEndBookingList.size();
-        
+        int size = todayBeginBookingList.size();
+
         for(int i=size-1;i>=0;i--){
-            Booking booking = todayEndBookingList.get(i);
+            Booking booking = todayBeginBookingList.get(i);
             if(booking.getEndTime() <= currentTime){
                 deleteBooking(booking);
             }
@@ -157,25 +155,24 @@ public class AutoUpdatableDataBaseHandler{
     private void deleteBooking(Booking booking){
         jdbcTemplateOrganisationDB.update("DELETE FROM Booking WHERE bookingNumber=?",
                 booking.getBookingNumber());
-        todayEndBookingList.remove(booking);
+        todayBeginBookingList.remove(booking);
         jdbcTemplateGamesDB.update("UPDATE Games SET isTaken=? WHERE id=?",
                 false, booking.getGameID());
     }
 
-    @Scheduled(cron = "0 45 * * * *")
+   @Scheduled(cron = "0 45 * * * *")
     private void checkTimeOut(){
         System.out.println("checkTimeOut");
         int currentTime = LocalDateTime.now(NSK_ZONE_ID).getHour();
-        for (Booking booking : todayEndBookingList) {
-            if (booking.getEndTime() == (currentTime + 1) % HOURS_PER_DAY) {
+        for (Booking booking : todayBeginBookingList) {
+            if (booking.getEndTime() == (currentTime + 1) && booking.isPaid()) {
                 try {
                     String infoBotChatId = getInfoBotChatIDByPhoneNumber(booking.getPhoneNumber());
                     notification.sendMessageToInfoBot(infoBotChatId, NOTIFY_TIME_MESSAGE);
                 }
                 catch (NullPointerException e) {
-                    System.out.println("INFO CHAT ID IS NOT FOUND, phone number is not valid " + e.getMessage());
+                    System.out.println(e.getMessage());
                 }
-
             }
         }
     }
@@ -184,18 +181,25 @@ public class AutoUpdatableDataBaseHandler{
     private void warningTimeOut(){
         System.out.println("warningTimeOut");
         int currentTime = LocalDateTime.now(NSK_ZONE_ID).getHour();
-        for (Booking booking : todayEndBookingList) {
-            if (booking.getEndTime() == (currentTime + 1) % HOURS_PER_DAY) {
+        for (Booking booking : todayBeginBookingList) {
+            if (booking.getEndTime() == (currentTime + 1) && booking.isPaid()) {
                 try {
-                    String infoBotChatId = getInfoBotChatIDByPhoneNumber(booking.getPhoneNumber());
-                    notification.sendMessageToInfoBot(infoBotChatId, WARNING_TIME_MESSAGE);
+                    setCurrentPeopleNumberByRoomNumber(booking.getRoomNumber());
+                    infoSender.sendToAdminRoomInfo(jdbcTemplateOrganisationDB, booking.getRoomNumber(), getTodayBeginBookingList());
                 }
-                catch (NullPointerException e) {
-                    System.out.println("INFO CHAT ID IS NOT FOUND, phone number is not valid " + e.getMessage());
+                catch (NullPointerException | WrongRoomNumberException e) {
+                    System.out.println(e.getMessage());
                 }
-
             }
         }
+    }
+
+    static List<Booking> getTodayBeginBookingList() {
+        return todayBeginBookingList;
+    }
+    private void setCurrentPeopleNumberByRoomNumber(int roomNumber){
+        jdbcTemplateOrganisationDB.update("UPDATE Room SET currentpersonnumber=? WHERE number=?",
+                0, roomNumber);
     }
 
     private String getInfoBotChatIDByPhoneNumber(String phoneNumber){
@@ -203,7 +207,10 @@ public class AutoUpdatableDataBaseHandler{
                         new Object[]{phoneNumber}, new PersonMapper()).stream().findAny().
                 orElse(null);
         if (person == null) {
-            throw new NullPointerException(phoneNumber);
+            throw new NullPointerException("PERSON WITH THIS PHONENUMBER NOT EXIST, phonenumber : " + phoneNumber);
+        }
+        if(person.getInfoBotChatID() == null){
+            throw new NullPointerException("PERSON WITH THIS PHONENUMBER HAVE NOT INFO CHAT ID, phonenumber : " + phoneNumber);
         }
         return person.getInfoBotChatID();
     }
@@ -235,17 +242,25 @@ public class AutoUpdatableDataBaseHandler{
 
     @Scheduled(cron = "0 5 * * * *")
     @Scheduled(cron = "@hourly")
-    public void updateRoomData(){
+    public void updateRoomData() {
         System.out.println("updateRoomData");
         List<BufferRoomData> list =
                 jdbcTemplateOrganisationDB.
                         query("SELECT * FROM bufferRoomData WHERE isShouldChange=?",
                                 new Object[]{true}, new BufferRoomDataMapper());
+
         for (BufferRoomData bufferRoomData : list) {
             updateDataByRoom(bufferRoomData.getRoomNumber(),
                     bufferRoomData.getPeopleNumber());
+            try {
+                infoSender.sendToAdminRoomInfo(jdbcTemplateOrganisationDB, bufferRoomData.getRoomNumber(), getTodayBeginBookingList());
+            } catch (WrongRoomNumberException e) {
+                System.out.println(e.getMessage());
+            }
         }
     }
+
+
 
     private void updateDataByRoom(int roomNumber, int peopleNumber){
         jdbcTemplateOrganisationDB.update("UPDATE Room SET currentpersonnumber=? WHERE number=?",

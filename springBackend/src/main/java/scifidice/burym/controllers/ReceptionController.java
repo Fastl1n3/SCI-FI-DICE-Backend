@@ -2,6 +2,8 @@ package scifidice.burym.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import scifidice.burym.model.AdminMessage;
+import scifidice.burym.model.AdminMessageType;
 import scifidice.levachev.DataBaseHandler.ReceptionDataBaseHandler;
 import scifidice.levachev.Model.ClientInformation;
 import scifidice.levachev.Model.ReceptionCodeAnswer;
@@ -37,11 +39,12 @@ public class ReceptionController {
 
     @GetMapping(value = "/postId")
     @ResponseBody
-    public ResponseReception postId(@RequestParam("bookId") int bookId) {
+    public scifidice.burym.controllers.ReceptionController.ResponseReception postId(@RequestParam("bookId") int bookId) {
         ReceptionCodeAnswer receptionCodeAnswer = receptionDataBaseHandler.isBookingNumberValid(bookId);
         System.out.println(LocalDateTime.now(NSK_ZONE_ID) + " RECEPTION: booking id: " + + bookId + ".");
-        adminController.sendMessageToAdmin(LocalDateTime.now(NSK_ZONE_ID) + " RECEPTION: booking id: " + + bookId + ".");
-        return new ResponseReception(receptionCodeAnswer.toString());
+        adminController.sendMessageToAdmin(new AdminMessage(AdminMessageType.LOG,
+                LocalDateTime.now(NSK_ZONE_ID) + " РЕСЕПШЕН: ввели id брони: " + + bookId + "."));
+        return new scifidice.burym.controllers.ReceptionController.ResponseReception(receptionCodeAnswer.toString());
     }
 
     @GetMapping(value = "/postPayData")
@@ -50,16 +53,19 @@ public class ReceptionController {
         ClientInformation clientInformation = receptionDataBaseHandler.payBooking(gameId, people);
         System.out.println(LocalDateTime.now(NSK_ZONE_ID) + " RECEPTION: people: " + people + ", gameId: " + gameId
                 + ", " + clientInformation.getCodeAnswer() + " sT: " + clientInformation.getBeginTime() + ", eT: " + clientInformation.getEndTime());
-        adminController.sendMessageToAdmin(LocalDateTime.now(NSK_ZONE_ID) + " RECEPTION: people: " + people + ", gameId: " + gameId
-                + ", " + clientInformation.getCodeAnswer() + " sT: " + clientInformation.getBeginTime() + ", eT: " + clientInformation.getEndTime());
+        adminController.sendMessageToAdmin(new AdminMessage(AdminMessageType.LOG,
+                LocalDateTime.now(NSK_ZONE_ID) + " РЕСЕПШЕН: пришло " + people + " человек в комнату #" +
+                        clientInformation.getRoomNumber()+ ", взяли игру: " + gameId + ", начало: " + clientInformation.getBeginTime()
+                        + "ч, конец: " + clientInformation.getEndTime() + "ч, наш ответ: " + clientInformation.getCodeAnswer() + "."));
         return clientInformation;
     }
 
     @GetMapping(value = "/addPeople")
     @ResponseBody
-    public ResponseReception addPeople(@RequestParam("people") int people) {
+    public scifidice.burym.controllers.ReceptionController.ResponseReception addPeople(@RequestParam("people") int people) {
         ReceptionCodeAnswer receptionCodeAnswer = receptionDataBaseHandler.addPeople(people);
-        adminController.sendMessageToAdmin(LocalDateTime.now(NSK_ZONE_ID) + " RECEPTION ADD: people: " + people + ", " + receptionCodeAnswer);
-        return new ResponseReception(receptionCodeAnswer.toString());
+        adminController.sendMessageToAdmin(new AdminMessage(AdminMessageType.LOG,
+                LocalDateTime.now(NSK_ZONE_ID) + " РЕСЕПШЕН: добавление новых людей: +" + people + " чел, " + receptionCodeAnswer));
+        return new scifidice.burym.controllers.ReceptionController.ResponseReception(receptionCodeAnswer.toString());
     }
 }

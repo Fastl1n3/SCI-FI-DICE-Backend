@@ -7,9 +7,9 @@ import java.sql.Date;
 
 public class DataBaseEntityAdder {
     void addRoomToTable(Room room, JdbcTemplate jdbcTemplate){
-        jdbcTemplate.update("INSERT INTO Room VALUES(?, ?, ?, ?)",
+        jdbcTemplate.update("INSERT INTO Room VALUES(?, ?, ?, ?, ?)",
                 room.getNumber(), room.getSchedule(), room.getPassword(),
-                room.getCurrentPeopleNumber());
+                room.getCurrentPersonNumber(), room.getMaxPersonNumber());
     }
 
     void addGameToTable(Game game, JdbcTemplate jdbcTemplate){

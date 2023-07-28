@@ -1,0 +1,55 @@
+package scifidice.levachev.DataBaseHandler;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
+import scifidice.burym.controllers.AdminController;
+import scifidice.levachev.Mapper.RoomMapper;
+import scifidice.levachev.Model.Booking;
+import scifidice.levachev.Model.HoursPair;
+import scifidice.levachev.Model.Room;
+import scifidice.levachev.Model.RoomInfo;
+
+import java.time.LocalTime;
+import java.util.List;
+
+import static scifidice.burym.config.SpringConfig.NSK_ZONE_ID;
+
+@Component
+public class InfoSender {
+
+    @Autowired
+    private AdminController adminController;
+
+    public void sendToAdminRoomInfo(JdbcTemplate jdbcTemplateOrganisationDB, int roomNumber, List<Booking> todayBeginBookingList) throws WrongRoomNumberException {
+        Room room = jdbcTemplateOrganisationDB.
+                query("SELECT * FROM room WHERE number=?", new Object[]{roomNumber}, new RoomMapper()).
+                stream().findAny().orElse(null);
+        if(room == null){
+            throw new WrongRoomNumberException("wrong room number");
+        }
+        HoursPair hoursPair = getHoursPair(roomNumber, todayBeginBookingList);
+        if (room.getCurrentPersonNumber() == 0) {
+            adminController.sendRoomInfo(new RoomInfo(roomNumber, room.getPassword(), room.getCurrentPersonNumber(),
+                    -1, -1));
+        }
+        else {
+            adminController.sendRoomInfo(new RoomInfo(roomNumber, room.getPassword(), room.getCurrentPersonNumber(),
+                    hoursPair.getFirstHour(), hoursPair.getSecondHour()));
+        }
+    }
+
+    private HoursPair getHoursPair(int roomNumber, List<Booking> todayBeginBookingList) {
+        for (Booking booking : todayBeginBookingList) {
+
+            LocalTime nowTime = LocalTime.now(NSK_ZONE_ID);
+
+            if (booking.getBeginTime() <= nowTime.getHour() &&
+                    booking.getEndTime() > nowTime.getHour() &&
+                    booking.getRoomNumber() == roomNumber) {
+                return new HoursPair(booking.getBeginTime(), booking.getEndTime());
+            }
+        }
+        return new HoursPair(-1, -1);
+    }
+}

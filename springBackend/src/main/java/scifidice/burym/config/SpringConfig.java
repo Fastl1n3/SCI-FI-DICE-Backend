@@ -2,6 +2,7 @@ package scifidice.burym.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.servlet.MultipartConfigFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -9,16 +10,16 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.util.unit.DataSize;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.ViewResolverRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.thymeleaf.spring5.SpringTemplateEngine;
-import org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver;
-import org.thymeleaf.spring5.view.ThymeleafViewResolver;
 
+import javax.servlet.MultipartConfigElement;
 import javax.sql.DataSource;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 
 @Configuration
 @ComponentScan("scifidice")
@@ -36,71 +37,52 @@ public class SpringConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**");
-
     }
 
     @Bean
-    public SpringResourceTemplateResolver templateResolver() {
-        SpringResourceTemplateResolver templateResolver = new SpringResourceTemplateResolver();
-        templateResolver.setApplicationContext(applicationContext);
-        templateResolver.setPrefix("/WEB-INF/views/");
-        templateResolver.setSuffix(".html");
-        return templateResolver;
+    MultipartConfigElement multipartConfigElement() {
+        MultipartConfigFactory factory = new MultipartConfigFactory();
+        factory.setMaxFileSize(DataSize.parse("512KB"));
+        factory.setMaxRequestSize(DataSize.parse("512KB"));
+        return factory.createMultipartConfig();
     }
 
-    @Bean
-    public SpringTemplateEngine templateEngine() {
-        SpringTemplateEngine templateEngine = new SpringTemplateEngine();
-        templateEngine.setTemplateResolver(templateResolver());
-        templateEngine.setEnableSpringELCompiler(true);
-        return templateEngine;
-    }
 
-    @Override
-    public void configureViewResolvers(ViewResolverRegistry registry) {
-        ThymeleafViewResolver resolver = new ThymeleafViewResolver();
-        resolver.setTemplateEngine(templateEngine());
-        registry.viewResolver(resolver);
-    }
+    public static final int DAYS_PER_WEEK = 7;
 
-    public static final int DAYS_PER_WEEK =7;
     public static final int HOURS_PER_DAY =24;
+
     public static final ZoneId NSK_ZONE_ID = ZoneId.of("GMT+7");
-    public static final String NOTIFY_TIME_MESSAGE = "У вас осталось 10 минут, пожалуйста по истечению времени покиньте комнату, " +
-                                                        "не создавайте неудобств следующим гостям.";
-    public static final String NOTIFY_MANY_PEOPLE = "В комнате больше человек, чем было заявлено. Доплатите, иначе будет вызвана охрана.";
-    public static final String WARNING_TIME_MESSAGE = "Ваше время вышло, пожалуйста, покиньте помещение!";
 
-    @Value("${roomNumber}")
-    public int roomNumber;
+    public static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM);
+    public static final String NOTIFY_TIME_MESSAGE = "У вас осталось 10 минут, пожалуйста по истечению времени покиньте комнату "
+            + "и положите на место игры. Надеемся, вам все понравилось, приходите еще!";
 
-    public static int maxPeopleNumber;
+    public static final String NOTIFY_MANY_PEOPLE = "В комнате больше человек, чем было заявлено. Во избежание проблем,"
+            + "доплатите на ресепшене за новых гостей.";
 
-    @Value("${maxPeopleNumber}")
-    public void setPrivateName(int maxPeopleNumber) {
-        SpringConfig.maxPeopleNumber = maxPeopleNumber;
-    }
+    public static final String WARNING_TIME_MESSAGE = "Ваше время вышло!";
 
     @Value("${DBDriver}")
-    public String DBDriver;
+    private String DBDriver;
 
     @Value("${organisationDBUrl}")
-    public String organisationDBUrl;
+    private String organisationDBUrl;
 
     @Value("${organisationDBUsername}")
-    public String organisationDBUsername;
+    private String organisationDBUsername;
 
     @Value("${organisationDBPassword}")
-    public String organisationDBPassword;
+    private String organisationDBPassword;
 
     @Value("${gamesDBUrl}")
-    public String gamesDBUrl;
+    private String gamesDBUrl;
 
     @Value("${gamesDBUsername}")
-    public String gamesDBUsername;
+    private String gamesDBUsername;
 
     @Value("${gamesDBPassword}")
-    public String gamesDBPassword;
+    private String gamesDBPassword;
 
     @Bean
     public DataSource dataSourceOrganisationDB(){

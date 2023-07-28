@@ -10,16 +10,19 @@ public class Room {
 
     private String password;
 
-    private int currentPeopleNumber;
+    private int currentPersonNumber;
+
+    private int maxPersonNumber;
 
     public Room(){
         Arrays.fill(schedule, false);
     }
-    public Room(int number, String password) {
+    public Room(int number, String password,int currentPersonNumber, int maxPersonNumber) {
         this.number = number;
         this.password=password;
         Arrays.fill(schedule, false);
-        currentPeopleNumber=0;
+        this.currentPersonNumber=currentPersonNumber;
+        this.maxPersonNumber=maxPersonNumber;
     }
 
     public int getNumber() {
@@ -46,11 +49,19 @@ public class Room {
         this.password = password;
     }
 
-    public int getCurrentPeopleNumber() {
-        return currentPeopleNumber;
+    public int getCurrentPersonNumber() {
+        return currentPersonNumber;
     }
 
-    public void setCurrentPeopleNumber(int currentPeopleNumber) {
-        this.currentPeopleNumber = currentPeopleNumber;
+    public void setCurrentPersonNumber(int currentPersonNumber) {
+        this.currentPersonNumber = currentPersonNumber;
+    }
+
+    public int getMaxPersonNumber() {
+        return maxPersonNumber;
+    }
+
+    public void setMaxPersonNumber(int maxPersonNumber) {
+        this.maxPersonNumber = maxPersonNumber;
     }
 }

@@ -6,22 +6,18 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import scifidice.levachev.Mapper.PersonMapper;
 import scifidice.levachev.Mapper.RoomMapper;
-import scifidice.levachev.Model.Booking;
-import scifidice.levachev.Model.Person;
-import scifidice.levachev.Model.Room;
-import scifidice.levachev.Model.RoomScheduleForDay;
+import scifidice.levachev.Model.*;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.List;
 
 import static java.lang.Math.abs;
 import static java.time.temporal.ChronoUnit.DAYS;
 import static scifidice.burym.config.SpringConfig.HOURS_PER_DAY;
 import static scifidice.burym.config.SpringConfig.NSK_ZONE_ID;
 import static scifidice.levachev.DataBaseHandler.AutoUpdatableDataBaseHandler.addToTodayBeginBookingList;
-import static scifidice.levachev.DataBaseHandler.AutoUpdatableDataBaseHandler.addToTodayEndBookingList;
 
 @Component
 public class BookingBotDataBaseHandler extends DataBaseEntityAdder {
@@ -40,15 +36,19 @@ public class BookingBotDataBaseHandler extends DataBaseEntityAdder {
         addPersonToTable(new Person(phoneNumber, bookingBotChatID), jdbcTemplateOrganisationDB);
     }
 
+    public boolean isBlackMarkPerson(String bookingChatID){
+        Person person = jdbcTemplateOrganisationDB.query("SELECT * FROM person WHERE bookingbotchatid=?",
+                new Object[]{bookingChatID}, new PersonMapper()).stream().findAny().orElse(null);
+        return person.isBlackMark();
+    }
+
     public int book(String bookingChatID, LocalDate beginDate, LocalDate endDate, int beginTime, int endTime, int roomNumber){
         if(!isBookingValid(beginDate, endDate, beginTime, endTime, roomNumber)){
-            System.out.println("Not valid booking");
             return -1;
         }
 
         String phoneNumber = getPhoneNumberByBookingChatID(bookingChatID);
         if(phoneNumber == null){
-            System.out.println("Not valid phone");
             return -1;
         }
 
@@ -59,16 +59,11 @@ public class BookingBotDataBaseHandler extends DataBaseEntityAdder {
 
         try{
             addBookingToTable(booking, jdbcTemplateOrganisationDB);
-            if(booking.getEndDate().isEqual( LocalDate.now(NSK_ZONE_ID))){
-                addToTodayEndBookingList(booking);
-            }
             if(booking.getBeginDate().isEqual(LocalDate.now(NSK_ZONE_ID))){
                 addToTodayBeginBookingList(booking);
             }
             updateRoomSchedule(booking.getRoomNumber(), booking.getBeginDate(), booking.getEndDate(), booking.getBeginTime(), booking.getEndTime());
         } catch (DataAccessException e){
-            System.out.println("!@#!@@$!");
-            System.out.println(e.getMessage());
             return -1;
         }
         return bookingNumber;
@@ -87,11 +82,10 @@ public class BookingBotDataBaseHandler extends DataBaseEntityAdder {
         long beginDiff = dayNumberRelativeToToday(beginDate);
 
         if(beginDate.isEqual(endDate)) {
-            for(int i=beginTime;i<=endTime;i++) {
+            for(int i=beginTime;i<endTime;i++) {
                 if(tmpArray[(int)(beginDiff * HOURS_PER_DAY + i)]){
                     return false;
                 }
-
             }
         } else{
             long endDiff = dayNumberRelativeToToday(endDate);
@@ -101,7 +95,7 @@ public class BookingBotDataBaseHandler extends DataBaseEntityAdder {
                     return false;
                 }
             }
-            for(int i=0;i<=endTime;i++){
+            for(int i=0;i<endTime;i++){
                 if(tmpArray[(int) (endDiff* HOURS_PER_DAY +i)]){
                     return false;
                 }
@@ -110,7 +104,7 @@ public class BookingBotDataBaseHandler extends DataBaseEntityAdder {
         return true;
     }
 
-    private String getPhoneNumberByBookingChatID(String bookingBotChatID){
+    public String getPhoneNumberByBookingChatID(String bookingBotChatID){
         Person person = jdbcTemplateOrganisationDB.query("SELECT * FROM Person WHERE bookingBotChatID=?",
                         new Object[]{bookingBotChatID}, new PersonMapper()).
                 stream().findAny().orElse(null);
@@ -130,7 +124,6 @@ public class BookingBotDataBaseHandler extends DataBaseEntityAdder {
                 new Object[]{roomNumber}, new RoomMapper()).
                 stream().findAny().orElse(null);
         Boolean[] tmpArray = room.getSchedule();
-        //////////////////////////////////////////////////////////////
 
         if(beginDate.isEqual(endDate)) {
             for(int i=beginTime;i<endTime;i++) {
@@ -148,24 +141,56 @@ public class BookingBotDataBaseHandler extends DataBaseEntityAdder {
             }
         }
 
-        ////////////////////////////////////
         room.setSchedule(tmpArray);
         jdbcTemplateOrganisationDB.update("UPDATE Room SET schedule=? WHERE number=?", room.getSchedule(), roomNumber);
     }
 
-    public ArrayList<RoomScheduleForDay> getScheduleForDate(int dayNumber){
+    public ArrayList<HoursPair> getScheduleForDateByRoomNumber(int dayNumber, int roomNumber) throws WrongRoomNumberException {
         if(dayNumber<0 || dayNumber>6){
-            throw new DateTimeParseException("Wrong date", "123", dayNumber);
+            throw new DateTimeParseException("Wrong date", "", dayNumber);
         }
-        List<Room> list = jdbcTemplateOrganisationDB.query("SELECT * FROM Room", new RoomMapper());
-        ArrayList<RoomScheduleForDay> scheduleForDate = new ArrayList<>();
-        for(int i=0;i<list.size();i++){
-            scheduleForDate.add(null);
+
+        Room room = jdbcTemplateOrganisationDB.query("SELECT * FROM Room WHERE number=?",
+                        new Object[]{roomNumber}, new RoomMapper()).
+                stream().findAny().orElse(null);
+        if(room == null){
+            throw new WrongRoomNumberException("wrong room number");
         }
-        for (Room room : list){
-            scheduleForDate.set(room.getNumber()-1, getRoomScheduleForDayByRoom(room, dayNumber));
+        return getHoursPairs(getRoomScheduleForDayByRoom(room, dayNumber).getSchedule(), dayNumber);
+    }
+
+    private ArrayList<HoursPair> getHoursPairs(ArrayList<Boolean> schedule, int dayNumber){
+        ArrayList<HoursPair> hoursPairs = new ArrayList<>();
+
+        boolean isOnStreak = false;
+
+        int firstHour = 0;
+        int secondHour = 0;
+        int nowHours = LocalTime.now(NSK_ZONE_ID).getHour();
+
+        for(int i=0;i<schedule.size();i++){
+            if(i < nowHours && dayNumber == 0){
+                continue;
+            }
+            if(!schedule.get(i)){
+                secondHour = i + 1;
+
+                if(!isOnStreak){
+                    isOnStreak = true;
+                    firstHour = i;
+                }
+            } else {
+                if(isOnStreak){
+                    hoursPairs.add(new HoursPair(firstHour, secondHour));
+                    isOnStreak = false;
+                }
+            }
         }
-        return scheduleForDate;
+
+        if(isOnStreak){
+            hoursPairs.add(new HoursPair(firstHour, secondHour));
+        }
+        return hoursPairs;
     }
 
     private RoomScheduleForDay getRoomScheduleForDayByRoom(Room room, int dayNumber){
