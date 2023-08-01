@@ -18,7 +18,7 @@ import static scifidice.levachev.DataBaseHandler.BookingBotDataBaseHandler.dayNu
 
 
 @RestController
-@RequestMapping("/bot")
+@RequestMapping("/backend/bot")
 public class BookBotController {
     @Autowired
     private BookingBotDataBaseHandler bookingBotDataBaseHandler;
@@ -27,11 +27,10 @@ public class BookBotController {
     private AdminController adminController;
 
     @GetMapping(value = "/getDate")
-    @ResponseBody
     private DateResponse getDate(@RequestParam("dateStr") String dateStr, @RequestParam("room") int room) {     //тут обязательно нужны параметры, если не стоит required=false
         try {
             System.out.println(LocalDateTime.now(NSK_ZONE_ID).format(dateTimeFormatter) + " DATE REQUEST: " + dateStr);
-            adminController.sendMessageToAdmin(new AdminMessage(AdminMessageType.LOG, LocalDateTime.now(NSK_ZONE_ID) +" Запрос даты: " + dateStr + "."));
+            adminController.sendMessageToAdmin(new AdminMessage(AdminMessageType.LOG, LocalDateTime.now(NSK_ZONE_ID).format(dateTimeFormatter) +" Запрос даты: " + dateStr + "."));
             LocalDate date = HandlerDateTime.getDateObject(dateStr); // проверка даты на валидность
             ArrayList<HoursPair> hourPairs =  bookingBotDataBaseHandler.getScheduleForDateByRoomNumber((int) dayNumberRelativeToToday(date), room);
             StringBuilder dateAns = HandlerDateTime.hoursPairsHandler(hourPairs);
@@ -44,13 +43,12 @@ public class BookBotController {
         }
         catch (Exception e) {
             System.out.println("DATABASE shutdown!!!");
-            adminController.sendMessageToAdmin(new AdminMessage(AdminMessageType.ALARM,"DATABASE shutdown!!!!"));
+            adminController.sendMessageToAdmin(new AdminMessage(AdminMessageType.ALARM,LocalDateTime.now(NSK_ZONE_ID).format(dateTimeFormatter) + " DATABASE shutdown!!!!"));
             return new DateResponse(-1, "");
         }
     }
 
     @PostMapping( "/postReservation")
-    @ResponseBody
     private ReservationResponse postReservation(@RequestBody ReservationRequest reservationRequest) {
         try {
             String phone = bookingBotDataBaseHandler.getPhoneNumberByBookingChatID(reservationRequest.getUserId());
@@ -60,7 +58,7 @@ public class BookBotController {
                 throw new RuntimeException("Person "+ reservationRequest.getUserId() +" in black list");
             }
 
-            adminController.sendMessageToAdmin(new AdminMessage(AdminMessageType.LOG,LocalDateTime.now(NSK_ZONE_ID)+"  Запрос на бронирование: пользователь: " + phone + ", на дату: "
+            adminController.sendMessageToAdmin(new AdminMessage(AdminMessageType.LOG,LocalDateTime.now(NSK_ZONE_ID).format(dateTimeFormatter) + "  Запрос на бронирование: пользователь: " + phone + ", на дату: "
                     + reservationRequest.getDateStr() + ", в комнату: " + reservationRequest.getRoom() + ", часы: " + reservationRequest.getHours() + "ч."));
 
             int[] hours = HandlerDateTime.getHours(reservationRequest.getHours()); // проверка валидности часов
@@ -71,7 +69,7 @@ public class BookBotController {
             }
             System.out.println(LocalDateTime.now(NSK_ZONE_ID) + " RESERVATION RESPONSE: book id: " + id + ", user: " + reservationRequest.getUserId()+", phone: "+ phone);
 
-            adminController.sendMessageToAdmin(new AdminMessage(AdminMessageType.LOG,LocalDateTime.now(NSK_ZONE_ID) + " Пользователь: "+ phone +
+            adminController.sendMessageToAdmin(new AdminMessage(AdminMessageType.LOG,LocalDateTime.now(NSK_ZONE_ID).format(dateTimeFormatter) + " Пользователь: "+ phone +
                     " успешно забронировал, id брони: " + id + "."));
 
             return new ReservationResponse(0, Integer.toString(id));
@@ -82,24 +80,22 @@ public class BookBotController {
     }
 
     @GetMapping( "/postPhone")
-    @ResponseBody
     private int postPhone(@RequestParam("phone") String phone, @RequestParam("chatId") String bookingChatId) {
         System.out.println(LocalDateTime.now(NSK_ZONE_ID) + " NEW USER FROM BOOKING: phone: " + phone + ", chat id: " + bookingChatId +".");
         try {
             bookingBotDataBaseHandler.authorization(phone, bookingChatId);
-            adminController.sendMessageToAdmin(new AdminMessage(AdminMessageType.LOG,LocalDateTime.now(NSK_ZONE_ID) + " Новый пользователь букинг бота: телефон: "
+            adminController.sendMessageToAdmin(new AdminMessage(AdminMessageType.LOG,LocalDateTime.now(NSK_ZONE_ID).format(dateTimeFormatter) + " Новый пользователь букинг бота: телефон: "
                     + phone + ", его chat id: " + bookingChatId + " - УСПЕШНО."));
             return 0;
         }
         catch (DataAccessException e) {
-            adminController.sendMessageToAdmin(new AdminMessage(AdminMessageType.LOG,LocalDateTime.now(NSK_ZONE_ID) + " Новый пользователь букинг бота: телефон: "
+            adminController.sendMessageToAdmin(new AdminMessage(AdminMessageType.LOG,LocalDateTime.now(NSK_ZONE_ID).format(dateTimeFormatter) + " Новый пользователь букинг бота: телефон: "
                     + phone + ", его chat id: " + bookingChatId + " - ПРОВАЛЕНО."));
             return -1;
         }
     }
 
     @GetMapping( "/checkHasPhone")
-    @ResponseBody
     private int checkHasPhone(@RequestParam("chatId") String bookingChatId) {
         if (bookingBotDataBaseHandler.getPhoneNumberByBookingChatID(bookingChatId) == null) {
             return -1;
@@ -108,5 +104,4 @@ public class BookBotController {
             return 0;
         }
     }
-
 }

@@ -1,8 +1,12 @@
 package scifidice.levachev.DataBaseHandler;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.event.EventListener;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 import scifidice.burym.controllers.AdminController;
 import scifidice.levachev.Mapper.RoomMapper;
 import scifidice.levachev.Model.Booking;
@@ -14,26 +18,44 @@ import java.time.LocalTime;
 import java.util.List;
 
 import static scifidice.burym.config.SpringConfig.NSK_ZONE_ID;
+import static scifidice.levachev.DataBaseHandler.AutoUpdatableDataBaseHandler.getTodayBeginBookingList;
 
 @Component
+@PropertySource("classpath:dataBase.properties")
 public class InfoSender {
+    @Value("${roomNumber}")
+    private int roomNumber;
 
     @Autowired
     private AdminController adminController;
 
-    public void sendToAdminRoomInfo(JdbcTemplate jdbcTemplateOrganisationDB, int roomNumber, List<Booking> todayBeginBookingList) throws WrongRoomNumberException {
+    @Autowired
+    private JdbcTemplate jdbcTemplateOrganisationDB;
+
+    @EventListener
+    public void handleSessionConnected(SessionSubscribeEvent event) {
+        System.out.println("Admin has connected.");
+        for (int i = 1; i <= roomNumber; i++) {
+            try {
+                sendToAdminRoomInfo(i, getTodayBeginBookingList());
+            } catch (WrongRoomNumberException e) {
+                System.out.println("Invalid roomNumber in properties file");
+            }
+        }
+    }
+
+    public void sendToAdminRoomInfo(int roomNumber, List<Booking> todayBeginBookingList) throws WrongRoomNumberException {
         Room room = jdbcTemplateOrganisationDB.
                 query("SELECT * FROM room WHERE number=?", new Object[]{roomNumber}, new RoomMapper()).
                 stream().findAny().orElse(null);
-        if(room == null){
+        if (room == null) {
             throw new WrongRoomNumberException("wrong room number");
         }
         HoursPair hoursPair = getHoursPair(roomNumber, todayBeginBookingList);
         if (room.getCurrentPersonNumber() == 0) {
             adminController.sendRoomInfo(new RoomInfo(roomNumber, room.getPassword(), room.getCurrentPersonNumber(),
                     -1, -1));
-        }
-        else {
+        } else {
             adminController.sendRoomInfo(new RoomInfo(roomNumber, room.getPassword(), room.getCurrentPersonNumber(),
                     hoursPair.getFirstHour(), hoursPair.getSecondHour()));
         }
@@ -41,9 +63,7 @@ public class InfoSender {
 
     private HoursPair getHoursPair(int roomNumber, List<Booking> todayBeginBookingList) {
         for (Booking booking : todayBeginBookingList) {
-
             LocalTime nowTime = LocalTime.now(NSK_ZONE_ID);
-
             if (booking.getBeginTime() <= nowTime.getHour() &&
                     booking.getEndTime() > nowTime.getHour() &&
                     booking.getRoomNumber() == roomNumber) {

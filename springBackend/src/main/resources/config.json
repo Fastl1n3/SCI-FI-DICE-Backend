@@ -1,13 +1,16 @@
 {
   "games": [
-    {"id": 1, "name": "11", "rules":  "win11"},
-    {"id": 2, "name": "22", "rules":  "win22"},
-    {"id": 3, "name": "33", "rules":  "win33"},
-    {"id": 4, "name": "44", "rules":  "win44"}
+    {"id": 1, "name": "Монополия", "rules":  "Нужно заработать много денег и сделать банкротами других"},
+    {"id": 2, "name": "Манчикин", "rules":  "Нужно дойти до 10 уровня раньше всех"},
+    {"id": 3, "name": "Каркасон", "rules":  "Нужно правильно захватывать земли, дороги и реки, чтобы впоследствии набрать очков больше чем ваши соперники"},
+    {"id": 4, "name": "Мафия", "rules":  "Нужно вычислить мафию"},
+    {"id": 5, "name": "Uno", "rules":  "Нужно быстрее остальных избавиться от карт"}
   ],
   "rooms": [
     {"number": 1, "password":"11", "currentPersonNumber":  0, "maxPersonNumber" : 10},
-    {"number": 2, "password":"22", "currentPersonNumber":  0, "maxPersonNumber" : 11},
-    {"number": 3, "password":"33", "currentPersonNumber":  0, "maxPersonNumber" : 12}
+    {"number": 2, "password":"22", "currentPersonNumber":  0, "maxPersonNumber" : 8},
+    {"number": 3, "password":"33", "currentPersonNumber":  0, "maxPersonNumber" : 5},
+    {"number": 4, "password":"44", "currentPersonNumber":  0, "maxPersonNumber" : 8},
+    {"number": 5, "password":"55", "currentPersonNumber":  0, "maxPersonNumber" : 5}
   ]
 }

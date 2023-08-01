@@ -28,6 +28,7 @@ import static scifidice.burym.config.SpringConfig.*;
 @EnableScheduling
 public class AutoUpdatableDataBaseHandler{
     private static List<Booking> todayBeginBookingList = new ArrayList<>();
+
     private final JdbcTemplate jdbcTemplateGamesDB;
 
     private final JdbcTemplate jdbcTemplateOrganisationDB;
@@ -61,7 +62,7 @@ public class AutoUpdatableDataBaseHandler{
 
         int size = allBooking.size();
 
-        for(int i=size-1;i>=0;i--){
+        for(int i = size - 1; i >= 0; i--) {
             Booking booking = allBooking.get(i);
             if(booking.getEndDate().isBefore(LocalDate.now(NSK_ZONE_ID))){
                 deleteBooking(booking);
@@ -69,8 +70,12 @@ public class AutoUpdatableDataBaseHandler{
         }
     }
 
-    public static void addToTodayBeginBookingList(Booking booking){
+    static void addToTodayBeginBookingList(Booking booking){
         todayBeginBookingList.add(booking);
+    }
+
+    static List<Booking> getTodayBeginBookingList() {
+        return todayBeginBookingList;
     }
 
     public Optional<CheckPeopleInformation> checkPeople(int roomNumber, int actualPeopleNumber, LocalDateTime takePictureTime) throws WrongRoomNumberException {
@@ -78,7 +83,7 @@ public class AutoUpdatableDataBaseHandler{
                         new Object[]{roomNumber}, new RoomMapper()).stream().findAny().
                 orElse(null);
         if(room == null){
-            throw new WrongRoomNumberException("1");
+            throw new WrongRoomNumberException("room is null");
         }
 
         for (Booking booking : todayBeginBookingList) {
@@ -95,18 +100,14 @@ public class AutoUpdatableDataBaseHandler{
 
             long diff = MINUTES.between(takePictureTime, bookingEndDateTime);
 
-            System.out.println("takePictureTime "+takePictureTime);
-            System.out.println("bookingBeginDateTime "+bookingBeginDateTime);
-            System.out.println("bookingEndDateTime "+bookingEndDateTime);
-            System.out.println("DIFF MIN: " + diff);
             if(!takePictureTime.isBefore(bookingBeginDateTime) &&
-                takePictureTime.isBefore(bookingEndDateTime) && booking.getRoomNumber() == roomNumber){
+                    takePictureTime.isBefore(bookingEndDateTime) && booking.getRoomNumber() == roomNumber){
 
                 CheckPeopleInformation checkPeopleInformation = new CheckPeopleInformation();
 
                 String phoneNumber = getPhoneNumberByRoom(roomNumber);
                 if (phoneNumber == null) {
-                    throw new WrongRoomNumberException("2");
+                    throw new WrongRoomNumberException("phone number is null");
                 }
                 try {
                     String infoBotChatId = getInfoBotChatIDByPhoneNumber(phoneNumber);
@@ -129,8 +130,8 @@ public class AutoUpdatableDataBaseHandler{
         for(Booking booking : todayBeginBookingList){
             int currentHour = LocalDateTime.now(NSK_ZONE_ID).getHour();
             if(booking.getRoomNumber() == roomNumber &&
-                    booking.getBeginTime()<=currentHour &&
-                    booking.getEndTime()>currentHour){
+                    booking.getBeginTime() <= currentHour &&
+                    booking.getEndTime() > currentHour) {
                 return booking.getPhoneNumber();
             }
         }
@@ -144,7 +145,7 @@ public class AutoUpdatableDataBaseHandler{
         int currentTime = LocalDateTime.now(NSK_ZONE_ID).getHour();
         int size = todayBeginBookingList.size();
 
-        for(int i=size-1;i>=0;i--){
+        for(int i = size - 1; i >= 0; i--){
             Booking booking = todayBeginBookingList.get(i);
             if(booking.getEndTime() <= currentTime){
                 deleteBooking(booking);
@@ -160,7 +161,7 @@ public class AutoUpdatableDataBaseHandler{
                 false, booking.getGameID());
     }
 
-   @Scheduled(cron = "0 45 * * * *")
+    @Scheduled(cron = "0 45 * * * *")
     private void checkTimeOut(){
         System.out.println("checkTimeOut");
         int currentTime = LocalDateTime.now(NSK_ZONE_ID).getHour();
@@ -185,7 +186,7 @@ public class AutoUpdatableDataBaseHandler{
             if (booking.getEndTime() == (currentTime + 1) && booking.isPaid()) {
                 try {
                     setCurrentPeopleNumberByRoomNumber(booking.getRoomNumber());
-                    infoSender.sendToAdminRoomInfo(jdbcTemplateOrganisationDB, booking.getRoomNumber(), getTodayBeginBookingList());
+                    infoSender.sendToAdminRoomInfo(booking.getRoomNumber(), getTodayBeginBookingList());
                 }
                 catch (NullPointerException | WrongRoomNumberException e) {
                     System.out.println(e.getMessage());
@@ -194,9 +195,6 @@ public class AutoUpdatableDataBaseHandler{
         }
     }
 
-    static List<Booking> getTodayBeginBookingList() {
-        return todayBeginBookingList;
-    }
     private void setCurrentPeopleNumberByRoomNumber(int roomNumber){
         jdbcTemplateOrganisationDB.update("UPDATE Room SET currentpersonnumber=? WHERE number=?",
                 0, roomNumber);
@@ -226,13 +224,13 @@ public class AutoUpdatableDataBaseHandler{
 
     private void updateRoomSchedulePerDay(Room room){
         Boolean[] tmpArray = room.getSchedule();
-        for(int i = 0; i<(DAYS_PER_WEEK -1); i++) {
+        for(int i = 0; i < DAYS_PER_WEEK - 1; i++) {
             for (int j = 0; j < HOURS_PER_DAY; j++) {
-                tmpArray[i* HOURS_PER_DAY +j]=tmpArray[(i+1)* HOURS_PER_DAY +j];
+                tmpArray[i * HOURS_PER_DAY + j] = tmpArray[(i + 1) * HOURS_PER_DAY + j];
             }
         }
-        for(int i = 0; i< HOURS_PER_DAY; i++) {
-            tmpArray[(DAYS_PER_WEEK -1)* HOURS_PER_DAY +i]=false;
+        for(int i = 0; i < HOURS_PER_DAY; i++) {
+            tmpArray[(DAYS_PER_WEEK - 1) * HOURS_PER_DAY + i]=false;
         }
         room.setSchedule(tmpArray);
 
@@ -253,14 +251,12 @@ public class AutoUpdatableDataBaseHandler{
             updateDataByRoom(bufferRoomData.getRoomNumber(),
                     bufferRoomData.getPeopleNumber());
             try {
-                infoSender.sendToAdminRoomInfo(jdbcTemplateOrganisationDB, bufferRoomData.getRoomNumber(), getTodayBeginBookingList());
+                infoSender.sendToAdminRoomInfo(bufferRoomData.getRoomNumber(), getTodayBeginBookingList());
             } catch (WrongRoomNumberException e) {
                 System.out.println(e.getMessage());
             }
         }
     }
-
-
 
     private void updateDataByRoom(int roomNumber, int peopleNumber){
         jdbcTemplateOrganisationDB.update("UPDATE Room SET currentpersonnumber=? WHERE number=?",

@@ -1,7 +1,5 @@
 package scifidice.burym.model;
 
-
-
 public class DateResponse {
     private int codeAnswer;
     private String dateStr;

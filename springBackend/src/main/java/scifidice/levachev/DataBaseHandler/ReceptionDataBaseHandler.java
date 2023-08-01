@@ -19,7 +19,7 @@ import static scifidice.burym.config.SpringConfig.NSK_ZONE_ID;
 import static scifidice.levachev.DataBaseHandler.AutoUpdatableDataBaseHandler.getTodayBeginBookingList;
 
 @Component
-public class ReceptionDataBaseHandler extends DataBaseEntityAdder{
+public class ReceptionDataBaseHandler extends DataBaseEntityAdder {
     private Booking lastBooking;
     private final JdbcTemplate jdbcTemplateGamesDB;
     private final JdbcTemplate jdbcTemplateOrganisationDB;
@@ -29,7 +29,7 @@ public class ReceptionDataBaseHandler extends DataBaseEntityAdder{
 
     @Autowired
     public ReceptionDataBaseHandler(JdbcTemplate jdbcTemplateOrganisationDB, JdbcTemplate jdbcTemplateGamesDB) {
-        this.jdbcTemplateOrganisationDB=jdbcTemplateOrganisationDB;
+        this.jdbcTemplateOrganisationDB = jdbcTemplateOrganisationDB;
         this.jdbcTemplateGamesDB = jdbcTemplateGamesDB;
     }
 
@@ -37,29 +37,29 @@ public class ReceptionDataBaseHandler extends DataBaseEntityAdder{
         lastBooking = jdbcTemplateOrganisationDB.query("SELECT * FROM Booking WHERE bookingNumber=?",
                         new Object[]{bookingNumber}, new BookingMapper())
                 .stream().findAny().orElse(null);
-        if(lastBooking == null){
+        if (lastBooking == null) {
             return ReceptionCodeAnswer.INVALID_ID;
         }
-        if(!isWrongTime()){
+        if (!isWrongTime()) {
             return ReceptionCodeAnswer.WRONG_DATE;
         }
-        if(lastBooking.isPaid()){
+        if (lastBooking.isPaid()) {
             return ReceptionCodeAnswer.PAID;
         }
         return ReceptionCodeAnswer.SUCCESS;
     }
 
-    private boolean isWrongTime(){
+    private boolean isWrongTime() {
         LocalDateTime beginDateTime = LocalDateTime.of(lastBooking.getBeginDate(),
                 LocalTime.of(lastBooking.getBeginTime(), 0, 0, 0));
 
         LocalDate endDate = lastBooking.getEndDate();
         int endTime = lastBooking.getEndTime();
-        if(lastBooking.getEndTime() == 24){
+        if (lastBooking.getEndTime() == 24) {
             endTime = 0;
             endDate = endDate.plusDays(1);
         }
-        
+
         LocalDateTime endDateTime = LocalDateTime.of(endDate, LocalTime.of(endTime, 0, 0));
 
         LocalDateTime nowDateTime = LocalDateTime.now(NSK_ZONE_ID);
@@ -70,29 +70,29 @@ public class ReceptionDataBaseHandler extends DataBaseEntityAdder{
     }
 
 
-    private boolean isGameIDValid(int id){
+    private boolean isGameIDValid(int id) {
         Game game = jdbcTemplateGamesDB.query("SELECT * FROM Games WHERE id=?",
                         new Object[]{id}, new GameMapper())
                 .stream().findAny().orElse(null);
-        return game != null;
+        return game != null && !game.isTaken();
     }
 
     public ClientInformation payBooking(int gameID, int peopleNumber) {
         Room room = getRoom(lastBooking);
 
-        if(peopleNumber > room.getMaxPersonNumber()){
+        if (peopleNumber > room.getMaxPersonNumber()) {
             return new ClientInformation(
                     ReceptionCodeAnswer.ILLEGAL_PEOPLE_NUMBER, 0, 0, 0, null
             );
         }
-        
-        if(!isGameIDValid(gameID)){
+
+        if (!isGameIDValid(gameID)) {
             return new ClientInformation(
                     ReceptionCodeAnswer.INVALID_GAME_ID, 0, 0, 0, null
             );
         }
 
-        if(!pay()){
+        if (!pay()) {
             return new ClientInformation(
                     ReceptionCodeAnswer.FAILED_PAY, 0, 0, 0, null
             );
@@ -104,14 +104,14 @@ public class ReceptionDataBaseHandler extends DataBaseEntityAdder{
 
         updateLastVisit(lastBooking.getPhoneNumber());
 
-        if(isLate()) {
+        if (isLate()) {
             updateCurrentPeopleNumberByRoomNumber(lastBooking.getRoomNumber(), peopleNumber);
             try {
-                infoSender.sendToAdminRoomInfo(jdbcTemplateOrganisationDB, lastBooking.getRoomNumber(), getTodayBeginBookingList());
+                infoSender.sendToAdminRoomInfo(lastBooking.getRoomNumber(), getTodayBeginBookingList());
             } catch (WrongRoomNumberException e) {
                 System.out.println(e.getMessage());
             }
-        } else{
+        } else {
             updateRoomDataByRoomNumber(lastBooking.getRoomNumber(), peopleNumber);
         }
         /////////////////////////////////////////////
@@ -121,44 +121,44 @@ public class ReceptionDataBaseHandler extends DataBaseEntityAdder{
                 room.getPassword());
     }
 
-    public ReceptionCodeAnswer addPeople(int peopleNumber){
+    public ReceptionCodeAnswer addPeople(int peopleNumber) {
         int oldPeopleNumber;
         int newPeopleNumber;
 
         Room room = getRoom(lastBooking);
 
-        if(isLate()) {
+        if (isLate()) {
             oldPeopleNumber = room.getCurrentPersonNumber();
-        } else{
+        } else {
             BufferRoomData bufferRoomData = getBufferRoomData(lastBooking);
             oldPeopleNumber = bufferRoomData.getPeopleNumber();
         }
 
         newPeopleNumber = oldPeopleNumber + peopleNumber;
 
-        if(newPeopleNumber > room.getMaxPersonNumber()){
+        if (newPeopleNumber > room.getMaxPersonNumber()) {
             return ReceptionCodeAnswer.ILLEGAL_PEOPLE_NUMBER;
         }
 
-        if(!pay()){
+        if (!pay()) {
             return ReceptionCodeAnswer.FAILED_PAY;
         }
 
-        if(isLate()) {
+        if (isLate()) {
             updateCurrentPeopleNumberByRoomNumber(lastBooking.getRoomNumber(), newPeopleNumber);
             try {
-                infoSender.sendToAdminRoomInfo(jdbcTemplateOrganisationDB, lastBooking.getRoomNumber(), getTodayBeginBookingList());
+                infoSender.sendToAdminRoomInfo(lastBooking.getRoomNumber(), getTodayBeginBookingList());
             } catch (WrongRoomNumberException e) {
                 System.out.println(e.getMessage());
             }
-        } else{
+        } else {
             updateRoomDataByRoomNumber(lastBooking.getRoomNumber(), newPeopleNumber);
         }
 
         return ReceptionCodeAnswer.SUCCESS;
     }
 
-    private boolean isLate(){
+    private boolean isLate() {
         LocalDateTime beginTime = LocalDateTime.of(lastBooking.getBeginDate(),
                 LocalTime.of(lastBooking.getBeginTime(), 0, 0, 0));
 
@@ -168,20 +168,20 @@ public class ReceptionDataBaseHandler extends DataBaseEntityAdder{
     }
 
 
-    private Room getRoom(Booking booking){
+    private Room getRoom(Booking booking) {
         return jdbcTemplateOrganisationDB.query("SELECT * FROM Room WHERE number=?",
                         new Object[]{booking.getRoomNumber()}, new RoomMapper()).
                 stream().findAny().orElse(null);
     }
 
-    private BufferRoomData getBufferRoomData(Booking booking){
+    private BufferRoomData getBufferRoomData(Booking booking) {
         return jdbcTemplateOrganisationDB.query("SELECT * FROM bufferroomdata WHERE roomnumber=?",
                         new Object[]{booking.getRoomNumber()}, new BufferRoomDataMapper()).
                 stream().findAny().orElse(null);
     }
 
 
-    private void updateBookingEntry(int gameID, boolean isPaid){
+    private void updateBookingEntry(int gameID, boolean isPaid) {
         jdbcTemplateOrganisationDB.update("UPDATE Booking SET gameID=?, ispaid=? WHERE bookingNumber=?",
                 gameID, isPaid, lastBooking.getBookingNumber());
 
@@ -196,27 +196,27 @@ public class ReceptionDataBaseHandler extends DataBaseEntityAdder{
         }
     }
 
-    private void updateRoomDataByRoomNumber(int roomNumber, int peopleNumber){
+    private void updateRoomDataByRoomNumber(int roomNumber, int peopleNumber) {
         jdbcTemplateOrganisationDB.update("UPDATE bufferRoomData SET peopleNumber=?, isShouldChange=? WHERE roomNumber=?",
                 peopleNumber, true, roomNumber);
     }
 
-    private void updateCurrentPeopleNumberByRoomNumber(int roomNumber, int currentPeopleNumber){
+    private void updateCurrentPeopleNumberByRoomNumber(int roomNumber, int currentPeopleNumber) {
         jdbcTemplateOrganisationDB.update("UPDATE Room SET currentPersonNumber=? WHERE number=?",
                 currentPeopleNumber, roomNumber);
     }
 
-    private void takeGame(int gameID){
+    private void takeGame(int gameID) {
         jdbcTemplateGamesDB.update("UPDATE Games SET isTaken=? WHERE id=?",
                 true, gameID);
     }
 
-    private void updateLastVisit(String phoneNumber){
+    private void updateLastVisit(String phoneNumber) {
         jdbcTemplateOrganisationDB.update("UPDATE Person SET lastvisit=? WHERE phonenumber=?",
                 Date.valueOf(LocalDate.now(NSK_ZONE_ID)), phoneNumber);
     }
 
-    private boolean pay(){
+    private boolean pay() {
         return true;
     }
 }

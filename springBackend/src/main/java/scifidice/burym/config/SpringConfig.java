@@ -39,21 +39,10 @@ public class SpringConfig implements WebMvcConfigurer {
         registry.addMapping("/**");
     }
 
-    @Bean
-    MultipartConfigElement multipartConfigElement() {
-        MultipartConfigFactory factory = new MultipartConfigFactory();
-        factory.setMaxFileSize(DataSize.parse("512KB"));
-        factory.setMaxRequestSize(DataSize.parse("512KB"));
-        return factory.createMultipartConfig();
-    }
-
-
     public static final int DAYS_PER_WEEK = 7;
-
     public static final int HOURS_PER_DAY =24;
 
     public static final ZoneId NSK_ZONE_ID = ZoneId.of("GMT+7");
-
     public static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM);
     public static final String NOTIFY_TIME_MESSAGE = "У вас осталось 10 минут, пожалуйста по истечению времени покиньте комнату "
             + "и положите на место игры. Надеемся, вам все понравилось, приходите еще!";
@@ -83,6 +72,14 @@ public class SpringConfig implements WebMvcConfigurer {
 
     @Value("${gamesDBPassword}")
     private String gamesDBPassword;
+
+    @Bean
+    MultipartConfigElement multipartConfigElement() {
+        MultipartConfigFactory factory = new MultipartConfigFactory();
+        factory.setMaxFileSize(DataSize.parse("512KB"));
+        factory.setMaxRequestSize(DataSize.parse("512KB"));
+        return factory.createMultipartConfig();
+    }
 
     @Bean
     public DataSource dataSourceOrganisationDB(){

@@ -13,7 +13,7 @@ public class Booking {
     private int gameID;
     private boolean isPaid;
 
-    public Booking(){
+    public Booking() {
     }
 
     public Booking(int bookingNumber, String phoneNumber, LocalDate beginDate, LocalDate endDate, int beginTime, int endTime, int roomNumber, boolean isPaid) {
@@ -24,8 +24,8 @@ public class Booking {
         this.phoneNumber = phoneNumber;
         this.roomNumber = roomNumber;
         this.gameID = -1;
-        this.bookingNumber=bookingNumber;
-        this.isPaid=isPaid;
+        this.bookingNumber = bookingNumber;
+        this.isPaid = isPaid;
     }
 
 
