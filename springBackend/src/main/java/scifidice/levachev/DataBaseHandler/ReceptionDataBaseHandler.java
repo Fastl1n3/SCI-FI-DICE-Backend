@@ -82,19 +82,19 @@ public class ReceptionDataBaseHandler extends DataBaseEntityAdder {
 
         if (peopleNumber > room.getMaxPersonNumber()) {
             return new ClientInformation(
-                    ReceptionCodeAnswer.ILLEGAL_PEOPLE_NUMBER, 0, 0, 0, null
+                    0, 0, 0, null, ReceptionCodeAnswer.ILLEGAL_PEOPLE_NUMBER
             );
         }
 
         if (!isGameIDValid(gameID)) {
             return new ClientInformation(
-                    ReceptionCodeAnswer.INVALID_GAME_ID, 0, 0, 0, null
+                    0, 0, 0, null, ReceptionCodeAnswer.INVALID_GAME_ID
             );
         }
 
         if (!pay()) {
             return new ClientInformation(
-                    ReceptionCodeAnswer.FAILED_PAY, 0, 0, 0, null
+                    0, 0, 0, null, ReceptionCodeAnswer.FAILED_PAY
             );
         }
 
@@ -116,9 +116,9 @@ public class ReceptionDataBaseHandler extends DataBaseEntityAdder {
         }
         /////////////////////////////////////////////
 
-        return new ClientInformation(ReceptionCodeAnswer.SUCCESS, lastBooking.getRoomNumber(),
+        return new ClientInformation(lastBooking.getRoomNumber(),
                 lastBooking.getBeginTime(), lastBooking.getEndTime(),
-                room.getPassword());
+                room.getPassword(), ReceptionCodeAnswer.SUCCESS);
     }
 
     public ReceptionCodeAnswer addPeople(int peopleNumber) {
