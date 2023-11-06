@@ -1,25 +1,18 @@
 package scifidice.levachev.Model;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class ClientInformation {
     private int roomNumber;
     private int beginTime;
     private int endTime;
     private String password;
     private ReceptionCodeAnswer codeAnswer;
-
-    public ClientInformation(){
-    }
-
-    public ClientInformation(ReceptionCodeAnswer codeAnswer, int roomNumber, int beginTime, int endTime, String password) {
-        this.roomNumber = roomNumber;
-        this.beginTime = beginTime;
-        this.endTime = endTime;
-        this.password = password;
-        this.codeAnswer=codeAnswer;
-    }
 }
