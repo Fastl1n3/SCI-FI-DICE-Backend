@@ -1,5 +1,8 @@
 package scifidice.levachev.Model;
 
+import lombok.Getter;
+import lombok.Setter;
+
 public class HoursPair {
     private int firstHour;
     private int secondHour;

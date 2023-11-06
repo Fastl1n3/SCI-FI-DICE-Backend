@@ -1,5 +1,5 @@
 #IDEA's dir
-/.idea
+\.idea
 
 #property files
 *.properties
