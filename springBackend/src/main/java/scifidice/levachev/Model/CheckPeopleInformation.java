@@ -1,5 +1,10 @@
 package scifidice.levachev.Model;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class CheckPeopleInformation {
     private String infoBotChatID;
     private boolean inExitWindow;
@@ -14,37 +19,5 @@ public class CheckPeopleInformation {
     }
 
     public CheckPeopleInformation(){
-    }
-
-    public String getInfoBotChatID() {
-        return infoBotChatID;
-    }
-
-    public void setInfoBotChatID(String infoBotChatID) {
-        this.infoBotChatID = infoBotChatID;
-    }
-
-    public boolean isInExitWindow() {
-        return inExitWindow;
-    }
-
-    public void setInExitWindow(boolean inExitWindow) {
-        this.inExitWindow = inExitWindow;
-    }
-
-    public boolean isViolate() {
-        return isViolate;
-    }
-
-    public void setViolate(boolean violate) {
-        isViolate = violate;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
     }
 }

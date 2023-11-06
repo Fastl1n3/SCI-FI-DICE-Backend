@@ -1,5 +1,10 @@
 package scifidice.levachev.Model;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class BufferRoomData {
     private int roomNumber;
     private int peopleNumber;
@@ -12,29 +17,5 @@ public class BufferRoomData {
         this.roomNumber = roomNumber;
         this.peopleNumber = 0;
         this.isShouldChange = false;
-    }
-
-    public int getRoomNumber() {
-        return roomNumber;
-    }
-
-    public void setRoomNumber(int roomNumber) {
-        this.roomNumber = roomNumber;
-    }
-
-    public int getPeopleNumber() {
-        return peopleNumber;
-    }
-
-    public void setPeopleNumber(int peopleNumber) {
-        this.peopleNumber = peopleNumber;
-    }
-
-    public boolean isShouldChange() {
-        return isShouldChange;
-    }
-
-    public void setShouldChange(boolean shouldChange) {
-        isShouldChange = shouldChange;
     }
 }

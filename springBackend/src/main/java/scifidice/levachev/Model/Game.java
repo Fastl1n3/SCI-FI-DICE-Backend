@@ -1,4 +1,10 @@
 package scifidice.levachev.Model;
+
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class Game {
     private int id;
     private String name;
@@ -13,37 +19,5 @@ public class Game {
         this.name = name;
         this.rules = rules;
         isTaken=false;
-    }
-
-    public String getRules() {
-        return rules;
-    }
-
-    public void setRules(String rules) {
-        this.rules = rules;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public boolean isTaken() {
-        return isTaken;
-    }
-
-    public void setTaken(boolean taken) {
-        isTaken = taken;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 }
