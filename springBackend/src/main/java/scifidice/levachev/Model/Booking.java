@@ -1,5 +1,7 @@
 package scifidice.levachev.Model;
 
+import lombok.Getter;
+
 import java.time.LocalDate;
 
 public class Booking {
@@ -15,7 +17,7 @@ public class Booking {
 
     public Booking() {
     }
-
+    
     public Booking(int bookingNumber, String phoneNumber, LocalDate beginDate, LocalDate endDate, int beginTime, int endTime, int roomNumber, boolean isPaid) {
         this.beginDate = beginDate;
         this.endDate = endDate;
