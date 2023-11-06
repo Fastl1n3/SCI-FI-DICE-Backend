@@ -1,3 +1,9 @@
+#IDEA's dir
+/.idea
+
+#property files
+*.properties
+
 # Compiled class file
 *.class
 
