@@ -18,8 +18,8 @@ public class AdministratorDataBaseHandler extends DataBaseEntityAdder{
         this.jdbcTemplateGamesDB = jdbcTemplateGamesDB;
     }
 
-    public boolean addGame(int id, String name, String rules){
-        Game game = new Game(id, name, rules);
+    public boolean addGame(String name, String rules){
+        Game game = new Game(name, rules);
         try {
             addGameToTable(game, jdbcTemplateGamesDB);
         } catch (DataAccessException e){

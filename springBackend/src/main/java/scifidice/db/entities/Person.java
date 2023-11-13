@@ -20,9 +20,6 @@ public class Person {
     public Person(String phoneNumber, String bookingBotChatID) {
         this.phoneNumber = phoneNumber;
         lastVisit=LocalDate.now(NSK_ZONE_ID);
-        blackMark = false;
-        discount = 0;
         this.bookingBotChatID=bookingBotChatID;
-        infoBotChatID = null;
     }
 }
