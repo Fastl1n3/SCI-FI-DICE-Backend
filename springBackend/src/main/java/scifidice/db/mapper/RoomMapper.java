@@ -1,7 +1,7 @@
-package scifidice.Mapper;
+package scifidice.db.mapper;
 
 import org.springframework.jdbc.core.RowMapper;
-import scifidice.Entity.Room;
+import scifidice.db.entities.Room;
 import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;

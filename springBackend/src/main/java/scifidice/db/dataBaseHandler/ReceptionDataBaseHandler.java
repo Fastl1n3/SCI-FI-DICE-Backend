@@ -1,11 +1,14 @@
-package scifidice.DataBaseHandler;
+package scifidice.db.dataBaseHandler;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-import scifidice.Mapper.RoomMapper;
-import scifidice.Mapper.BookingMapper;
-import scifidice.Mapper.GameMapper;
+import scifidice.db.entities.Booking;
+import scifidice.db.entities.Game;
+import scifidice.db.entities.Room;
+import scifidice.db.mapper.RoomMapper;
+import scifidice.db.mapper.BookingMapper;
+import scifidice.db.mapper.GameMapper;
 import scifidice.Entity.*;
 
 import java.sql.Date;
@@ -15,7 +18,7 @@ import java.time.LocalTime;
 import java.util.List;
 
 import static scifidice.config.SpringConfig.NSK_ZONE_ID;
-import static scifidice.DataBaseHandler.AutoUpdatableDataBaseHandler.getTodayBeginBookingList;
+import static scifidice.db.dataBaseHandler.AutoUpdatableDataBaseHandler.getTodayBeginBookingList;
 
 @Component
 public class ReceptionDataBaseHandler extends DataBaseEntityAdder {

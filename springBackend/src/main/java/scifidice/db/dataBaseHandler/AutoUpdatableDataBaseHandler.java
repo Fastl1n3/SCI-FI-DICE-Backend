@@ -1,14 +1,17 @@
-package scifidice.DataBaseHandler;
+package scifidice.db.dataBaseHandler;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import scifidice.db.entities.Booking;
+import scifidice.db.entities.Person;
+import scifidice.db.entities.Room;
 import scifidice.infoBot.Notification;
-import scifidice.Mapper.BookingMapper;
-import scifidice.Mapper.PersonMapper;
-import scifidice.Mapper.RoomMapper;
+import scifidice.db.mapper.BookingMapper;
+import scifidice.db.mapper.PersonMapper;
+import scifidice.db.mapper.RoomMapper;
 import scifidice.Entity.*;
 
 import java.sql.Date;

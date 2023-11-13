@@ -5,8 +5,8 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import scifidice.model.StringResponse;
-import scifidice.DataBaseHandler.InformationBotDataBaseHandler;
-import scifidice.Entity.Game;
+import scifidice.db.dataBaseHandler.InformationBotDataBaseHandler;
+import scifidice.db.entities.Game;
 
 import java.time.LocalDateTime;
 import java.util.List;

@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import scifidice.model.AdminMessage;
 import scifidice.model.AdminMessageType;
 import scifidice.model.StringResponse;
-import scifidice.DataBaseHandler.ReceptionDataBaseHandler;
+import scifidice.db.dataBaseHandler.ReceptionDataBaseHandler;
 import scifidice.Entity.ClientInformation;
 import scifidice.Entity.ReceptionCodeAnswer;
 

@@ -1,4 +1,4 @@
-package scifidice.DataBaseHandler;
+package scifidice.db.dataBaseHandler;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,17 +8,17 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 import scifidice.controllers.AdminController;
-import scifidice.Mapper.RoomMapper;
-import scifidice.Entity.Booking;
+import scifidice.db.mapper.RoomMapper;
+import scifidice.db.entities.Booking;
 import scifidice.Entity.HoursPair;
-import scifidice.Entity.Room;
+import scifidice.db.entities.Room;
 import scifidice.Entity.RoomInfo;
 
 import java.time.LocalTime;
 import java.util.List;
 
 import static scifidice.config.SpringConfig.NSK_ZONE_ID;
-import static scifidice.DataBaseHandler.AutoUpdatableDataBaseHandler.getTodayBeginBookingList;
+import static scifidice.db.dataBaseHandler.AutoUpdatableDataBaseHandler.getTodayBeginBookingList;
 
 @Component
 @PropertySource("classpath:dataBase.properties")

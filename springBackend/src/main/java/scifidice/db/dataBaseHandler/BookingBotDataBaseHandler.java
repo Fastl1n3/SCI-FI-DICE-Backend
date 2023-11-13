@@ -1,11 +1,14 @@
-package scifidice.DataBaseHandler;
+package scifidice.db.dataBaseHandler;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-import scifidice.Mapper.PersonMapper;
-import scifidice.Mapper.RoomMapper;
+import scifidice.db.entities.Booking;
+import scifidice.db.entities.Person;
+import scifidice.db.entities.Room;
+import scifidice.db.mapper.PersonMapper;
+import scifidice.db.mapper.RoomMapper;
 import scifidice.Entity.*;
 
 import java.time.LocalDate;
@@ -17,7 +20,7 @@ import static java.lang.Math.abs;
 import static java.time.temporal.ChronoUnit.DAYS;
 import static scifidice.config.SpringConfig.HOURS_PER_DAY;
 import static scifidice.config.SpringConfig.NSK_ZONE_ID;
-import static scifidice.DataBaseHandler.AutoUpdatableDataBaseHandler.addToTodayBeginBookingList;
+import static scifidice.db.dataBaseHandler.AutoUpdatableDataBaseHandler.addToTodayBeginBookingList;
 
 @Component
 public class BookingBotDataBaseHandler extends DataBaseEntityAdder {
@@ -146,17 +149,18 @@ public class BookingBotDataBaseHandler extends DataBaseEntityAdder {
     }
 
     public ArrayList<HoursPair> getScheduleForDateByRoomNumber(int dayNumber, int roomNumber) throws WrongRoomNumberException {
-        if (dayNumber < 0 || dayNumber > 6) {
-            throw new DateTimeParseException("Wrong date", "", dayNumber);
-        }
-
-        Room room = jdbcTemplateOrganisationDB.query("SELECT * FROM Room WHERE number=?",
-                        new Object[]{roomNumber}, new RoomMapper()).
-                stream().findAny().orElse(null);
-        if (room == null) {
-            throw new WrongRoomNumberException("wrong room number");
-        }
-        return getHoursPairs(getRoomScheduleForDayByRoom(room, dayNumber).getSchedule(), dayNumber);
+//        if (dayNumber < 0 || dayNumber > 6) {
+//            throw new DateTimeParseException("Wrong date", "", dayNumber);
+//        }
+//
+//        Room room = jdbcTemplateOrganisationDB.query("SELECT * FROM Room WHERE number=?",
+//                        new Object[]{roomNumber}, new RoomMapper()).
+//                stream().findAny().orElse(null);
+//        if (room == null) {
+//            throw new WrongRoomNumberException("wrong room number");
+//        }
+//        return getHoursPairs(getRoomScheduleForDayByRoom(room, dayNumber).getSchedule(), dayNumber);
+        return null;
     }
 
     private ArrayList<HoursPair> getHoursPairs(ArrayList<Boolean> schedule, int dayNumber) {
@@ -191,14 +195,6 @@ public class BookingBotDataBaseHandler extends DataBaseEntityAdder {
             hoursPairs.add(new HoursPair(firstHour, secondHour));
         }
         return hoursPairs;
-    }
-
-    private RoomScheduleForDay getRoomScheduleForDayByRoom(Room room, int dayNumber) {
-        ArrayList<Boolean> arrayList = new ArrayList<>();
-        for (int i = 0; i < HOURS_PER_DAY; i++) {
-            arrayList.add(room.getSchedule()[(dayNumber) * HOURS_PER_DAY + i]);
-        }
-        return new RoomScheduleForDay(arrayList);
     }
 
     public int updatePhoneNumberByBookingBotChatID(String phoneNumber, String bookingBotChatID) {

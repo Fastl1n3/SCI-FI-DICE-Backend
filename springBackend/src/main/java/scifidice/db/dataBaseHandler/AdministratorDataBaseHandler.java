@@ -1,11 +1,11 @@
-package scifidice.DataBaseHandler;
+package scifidice.db.dataBaseHandler;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-import scifidice.Entity.Game;
-import scifidice.Entity.Room;
+import scifidice.db.entities.Game;
+import scifidice.db.entities.Room;
 
 @Component
 public class AdministratorDataBaseHandler extends DataBaseEntityAdder{

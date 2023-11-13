@@ -1,12 +1,14 @@
-package scifidice.DataBaseHandler;
+package scifidice.db.dataBaseHandler;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.util.ResourceUtils;
-import scifidice.Mapper.GameMapper;
-import scifidice.Mapper.RoomMapper;
+import scifidice.db.entities.Game;
+import scifidice.db.entities.Room;
+import scifidice.db.mapper.GameMapper;
+import scifidice.db.mapper.RoomMapper;
 import scifidice.Entity.*;
 
 import java.io.IOException;

@@ -1,6 +1,7 @@
 package scifidice.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import scifidice.db.entities.Game;
 
 import java.util.List;
 

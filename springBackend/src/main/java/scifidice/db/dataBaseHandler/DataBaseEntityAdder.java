@@ -1,7 +1,10 @@
-package scifidice.DataBaseHandler;
+package scifidice.db.dataBaseHandler;
 
 import org.springframework.jdbc.core.JdbcTemplate;
-import scifidice.Entity.*;
+import scifidice.db.entities.Booking;
+import scifidice.db.entities.Game;
+import scifidice.db.entities.Person;
+import scifidice.db.entities.Room;
 
 import java.sql.Date;
 

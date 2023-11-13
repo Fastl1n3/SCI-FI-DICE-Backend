@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.web.bind.annotation.*;
 import scifidice.model.*;
-import scifidice.DataBaseHandler.BookingBotDataBaseHandler;
+import scifidice.db.dataBaseHandler.BookingBotDataBaseHandler;
 import scifidice.Entity.HoursPair;
 
 import java.time.LocalDate;
@@ -14,7 +14,7 @@ import java.util.ArrayList;
 
 import static scifidice.config.SpringConfig.NSK_ZONE_ID;
 import static scifidice.config.SpringConfig.dateTimeFormatter;
-import static scifidice.DataBaseHandler.BookingBotDataBaseHandler.dayNumberRelativeToToday;
+import static scifidice.db.dataBaseHandler.BookingBotDataBaseHandler.dayNumberRelativeToToday;
 
 
 @RestController

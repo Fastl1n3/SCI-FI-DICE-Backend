@@ -6,8 +6,8 @@ import org.springframework.web.multipart.MultipartFile;
 import scifidice.infoBot.Notification;
 import scifidice.model.AdminMessage;
 import scifidice.model.AdminMessageType;
-import scifidice.DataBaseHandler.AutoUpdatableDataBaseHandler;
-import scifidice.DataBaseHandler.WrongRoomNumberException;
+import scifidice.db.dataBaseHandler.AutoUpdatableDataBaseHandler;
+import scifidice.db.dataBaseHandler.WrongRoomNumberException;
 import scifidice.Entity.CheckPeopleInformation;
 
 import java.io.IOException;

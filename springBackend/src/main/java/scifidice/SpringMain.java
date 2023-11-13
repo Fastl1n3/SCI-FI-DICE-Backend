@@ -4,8 +4,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
-import scifidice.DataBaseHandler.AutoUpdatableDataBaseHandler;
-import scifidice.DataBaseHandler.InitializationDBHandler;
+import scifidice.db.dataBaseHandler.AutoUpdatableDataBaseHandler;
+import scifidice.db.dataBaseHandler.InitializationDBHandler;
 import java.io.IOException;
 
 @SpringBootApplication

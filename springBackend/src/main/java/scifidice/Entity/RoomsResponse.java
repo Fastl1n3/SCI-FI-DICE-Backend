@@ -1,6 +1,8 @@
 package scifidice.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import scifidice.db.entities.Room;
+
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
