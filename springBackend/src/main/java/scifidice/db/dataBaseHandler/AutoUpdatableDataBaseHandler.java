@@ -206,7 +206,7 @@ public class AutoUpdatableDataBaseHandler{
     }
 
     private void setCurrentPeopleNumberByRoomNumber(int roomNumber){
-        jdbcTemplateOrganisationDB.update("UPDATE Room SET currentpersonnumber=? WHERE number=?",
+        jdbcTemplateOrganisationDB.update("UPDATE Booking SET current_people=? WHERE number=?",
                 0, roomNumber);
     }
 
