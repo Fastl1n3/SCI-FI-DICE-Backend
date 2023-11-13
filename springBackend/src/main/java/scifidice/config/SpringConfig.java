@@ -1,13 +1,13 @@
 package scifidice.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.MultipartConfigFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.util.unit.DataSize;
@@ -20,6 +20,7 @@ import javax.sql.DataSource;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.Objects;
 
 @Configuration
 @ComponentScan("scifidice")
@@ -28,10 +29,12 @@ import java.time.format.FormatStyle;
 public class SpringConfig implements WebMvcConfigurer {
 
     private final ApplicationContext applicationContext;
+    private final Environment environment;
 
     @Autowired
-    public SpringConfig(ApplicationContext applicationContext) {
+    public SpringConfig(ApplicationContext applicationContext, Environment environment) {
         this.applicationContext = applicationContext;
+        this.environment = environment;
     }
 
     @Override
@@ -52,27 +55,6 @@ public class SpringConfig implements WebMvcConfigurer {
 
     public static final String WARNING_TIME_MESSAGE = "Ваше время вышло!";
 
-    @Value("${DBDriver}")
-    private String DBDriver;
-
-    @Value("${organisationDBUrl}")
-    private String organisationDBUrl;
-
-    @Value("${organisationDBUsername}")
-    private String organisationDBUsername;
-
-    @Value("${organisationDBPassword}")
-    private String organisationDBPassword;
-
-    @Value("${gamesDBUrl}")
-    private String gamesDBUrl;
-
-    @Value("${gamesDBUsername}")
-    private String gamesDBUsername;
-
-    @Value("${gamesDBPassword}")
-    private String gamesDBPassword;
-
     @Bean
     MultipartConfigElement multipartConfigElement() {
         MultipartConfigFactory factory = new MultipartConfigFactory();
@@ -84,20 +66,10 @@ public class SpringConfig implements WebMvcConfigurer {
     @Bean
     public DataSource dataSourceOrganisationDB(){
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName(DBDriver);
-        dataSource.setUrl(organisationDBUrl);
-        dataSource.setUsername(organisationDBUsername);
-        dataSource.setPassword(organisationDBPassword);
-        return dataSource;
-    }
-
-    @Bean
-    public DataSource dataSourceGamesDB(){
-        DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName(DBDriver);
-        dataSource.setUrl(gamesDBUrl);
-        dataSource.setUsername(gamesDBUsername);
-        dataSource.setPassword(gamesDBPassword);
+        dataSource.setDriverClassName(Objects.requireNonNull(environment.getProperty("DBDriver")));
+        dataSource.setUrl(environment.getProperty("organisationDBUrl"));
+        dataSource.setUsername(environment.getProperty("organisationDBUsername"));
+        dataSource.setPassword(environment.getProperty("organisationDBPassword"));
         return dataSource;
     }
 
@@ -106,8 +78,4 @@ public class SpringConfig implements WebMvcConfigurer {
         return new JdbcTemplate(dataSourceOrganisationDB());
     }
 
-    @Bean
-    public JdbcTemplate jdbcTemplateGamesDB(){
-        return new JdbcTemplate(dataSourceGamesDB());
-    }
 }

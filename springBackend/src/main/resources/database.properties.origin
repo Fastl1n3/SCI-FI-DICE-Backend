@@ -2,9 +2,5 @@ organisationDBUrl=
 organisationDBUsername=
 organisationDBPassword=
 
-gamesDBUrl=
-gamesDBUsername=
-gamesDBPassword=
-
 DBDriver=
 roomNumber=
