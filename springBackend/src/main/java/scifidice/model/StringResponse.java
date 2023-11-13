@@ -1,19 +1,17 @@
 package scifidice.model;
 
-public class StringResponse {
-    private String message;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-    public StringResponse() {}
+@NoArgsConstructor
+@Getter
+@Setter
+public class StringResponse {
+
+    private String message;
 
     public StringResponse(String message) {
         this.message = message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public String getMessage() {
-        return message;
     }
 }
