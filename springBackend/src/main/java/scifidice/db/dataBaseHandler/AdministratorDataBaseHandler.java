@@ -28,8 +28,8 @@ public class AdministratorDataBaseHandler extends DataBaseEntityAdder{
         return true;
     }
 
-    public boolean addRoom(int roomNumber, String password, int maxPersonNumber){
-        Room room = new Room(roomNumber, password, 0, maxPersonNumber);
+    public boolean addRoom(int roomNumber, String password, int maxPeopleNumber){
+        Room room = new Room(roomNumber, password, maxPeopleNumber);
         try {
             addRoomToTable(room, jdbcTemplateOrganisationDB);
         } catch (DataAccessException e){

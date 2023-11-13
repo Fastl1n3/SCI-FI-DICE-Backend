@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 import scifidice.controllers.AdminController;
+import scifidice.db.mapper.BookingMapper;
 import scifidice.db.mapper.RoomMapper;
 import scifidice.db.entities.Booking;
 import scifidice.Entity.HoursPair;
@@ -51,12 +52,18 @@ public class InfoSender {
         if (room == null) {
             throw new WrongRoomNumberException("wrong room number");
         }
+        Booking booking = jdbcTemplateOrganisationDB.
+                query("SELECT * FROM room WHERE room_number=?", new Object[]{roomNumber}, new BookingMapper()).
+                stream().findAny().orElse(null);
+        if (booking == null) {
+            throw new WrongRoomNumberException("wrong room number");
+        }
         HoursPair hoursPair = getHoursPair(roomNumber, todayBeginBookingList);
-        if (room.getCurrentPersonNumber() == 0) {
-            adminController.sendRoomInfo(new RoomInfo(roomNumber, room.getPassword(), room.getCurrentPersonNumber(),
+        if (booking.getCurrentPeopleNumber() == 0) {
+            adminController.sendRoomInfo(new RoomInfo(roomNumber, room.getPassword(), booking.getCurrentPeopleNumber(),
                     -1, -1));
         } else {
-            adminController.sendRoomInfo(new RoomInfo(roomNumber, room.getPassword(), room.getCurrentPersonNumber(),
+            adminController.sendRoomInfo(new RoomInfo(roomNumber, room.getPassword(), booking.getCurrentPeopleNumber(),
                     hoursPair.getFirstHour(), hoursPair.getSecondHour()));
         }
     }

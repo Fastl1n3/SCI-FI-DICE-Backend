@@ -12,12 +12,8 @@ public class RoomMapper implements RowMapper<Room> {
 
         room.setNumber(rs.getInt("number"));
 
-        Array tmp = rs.getArray("schedule");
-        room.setSchedule((Boolean[]) tmp.getArray());
-
         room.setPassword(rs.getString("password"));
-        room.setCurrentPersonNumber(rs.getInt("currentPersonNumber"));
-        room.setMaxPersonNumber(rs.getInt("maxpersonnumber"));
+        room.setMaxPeopleNumber(rs.getInt("max_people"));
 
         return room;
     }

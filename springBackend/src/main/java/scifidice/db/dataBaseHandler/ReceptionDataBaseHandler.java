@@ -165,7 +165,7 @@ public class ReceptionDataBaseHandler extends DataBaseEntityAdder {
 
         LocalDateTime nowTime = LocalDateTime.now(NSK_ZONE_ID);
 
-        return nowTime.isAfter(beginTime);
+        return !nowTime.isBefore(beginTime);
     }
 
     private Room getRoom(Booking booking) {

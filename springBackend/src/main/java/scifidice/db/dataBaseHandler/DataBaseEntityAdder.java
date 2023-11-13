@@ -10,14 +10,13 @@ import java.sql.Date;
 
 public class DataBaseEntityAdder {
     void addRoomToTable(Room room, JdbcTemplate jdbcTemplate) {
-        jdbcTemplate.update("INSERT INTO Room VALUES(?, ?, ?, ?, ?)",
-                room.getNumber(), room.getSchedule(), room.getPassword(),
-                room.getCurrentPersonNumber(), room.getMaxPersonNumber());
+        jdbcTemplate.update("INSERT INTO Room VALUES(?, ?, ?)",
+                room.getNumber(), room.getPassword(), room.getMaxPeopleNumber());
     }
 
     void addGameToTable(Game game, JdbcTemplate jdbcTemplate) {
         jdbcTemplate.update("INSERT INTO Games VALUES(?, ?, ?, ?)",
-                game.getId(), game.getName(),
+                game.getGameId(), game.getName(),
                 game.getRules(), game.isTaken());
     }
 
@@ -26,7 +25,7 @@ public class DataBaseEntityAdder {
                 booking.getBookingNumber(), booking.getBeginDate(),
                 booking.getEndDate(), booking.getBeginTime(),
                 booking.getEndTime(), booking.getPhoneNumber(),
-                booking.getRoomNumber(), booking.getGameID(),
+                booking.getRoomNumber(), booking.getCurrentPeopleNumber(),
                 booking.isPaid());
     }
 

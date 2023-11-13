@@ -6,8 +6,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import scifidice.db.entities.Booking;
+import scifidice.db.entities.Game;
 import scifidice.db.entities.Person;
 import scifidice.db.entities.Room;
+import scifidice.db.mapper.GameMapper;
 import scifidice.infoBot.Notification;
 import scifidice.db.mapper.BookingMapper;
 import scifidice.db.mapper.PersonMapper;
@@ -81,10 +83,10 @@ public class AutoUpdatableDataBaseHandler{
     }
 
     public Optional<CheckPeopleInformation> checkPeople(int roomNumber, int actualPeopleNumber, LocalDateTime takePictureTime) throws WrongRoomNumberException {
-        Room room = jdbcTemplateOrganisationDB.query("SELECT * FROM Room WHERE number=?",
-                        new Object[]{roomNumber}, new RoomMapper()).stream().findAny().
+        Booking actualBooking = jdbcTemplateOrganisationDB.query("SELECT * FROM Booking WHERE room_number=?",
+                        new Object[]{roomNumber}, new BookingMapper()).stream().findAny().
                 orElse(null);
-        if(room == null){
+        if(actualBooking == null){
             throw new WrongRoomNumberException("room is null");
         }
 
@@ -119,7 +121,7 @@ public class AutoUpdatableDataBaseHandler{
                     return Optional.empty();
                 }
 
-                checkPeopleInformation.setViolate(actualPeopleNumber > room.getCurrentPersonNumber() && booking.isPaid());
+                checkPeopleInformation.setViolate(actualPeopleNumber > actualBooking.getCurrentPeopleNumber() && booking.isPaid());
                 checkPeopleInformation.setInExitWindow(diff < 5);
 
                 return Optional.of(checkPeopleInformation);
@@ -156,11 +158,17 @@ public class AutoUpdatableDataBaseHandler{
     }
 
     private void deleteBooking(Booking booking){
-        jdbcTemplateOrganisationDB.update("DELETE FROM Booking WHERE bookingNumber=?",
+        jdbcTemplateOrganisationDB.update("DELETE FROM Booking WHERE booking_number=?",
                 booking.getBookingNumber());
         todayBeginBookingList.remove(booking);
-        jdbcTemplateGamesDB.update("UPDATE Games SET isTaken=? WHERE id=?",
-                false, booking.getGameID());
+        List<Game> gamesToChange = jdbcTemplateOrganisationDB.query("SELECT * FROM Booking_Games WHERE booking_number = ?",
+                new Object[]{booking.getBookingNumber()}, new GameMapper());
+        for(Game game: gamesToChange){
+            jdbcTemplateGamesDB.update("UPDATE Games SET isTaken=? WHERE id=?",
+                    false, game.getGameId());
+        }
+        jdbcTemplateOrganisationDB.update("DELETE FROM Booking_Games WHERE booking_number=?",
+                booking.getBookingNumber());
     }
 
     @Scheduled(cron = "0 45 * * * *")
@@ -215,16 +223,16 @@ public class AutoUpdatableDataBaseHandler{
         return person.getInfoBotChatID();
     }
 
-    @Scheduled(cron = "@daily")
+    /*@Scheduled(cron = "@daily")                        тоже до лучших
     private void updateRoomTablePerDay(){
         System.out.println("updateRoomTablePerDay");
         List<Room> list = jdbcTemplateOrganisationDB.query("SELECT * FROM Room", new RoomMapper());
         for (Room room : list){
             updateRoomSchedulePerDay(room);
         }
-    }
+    }*/
 
-    private void updateRoomSchedulePerDay(Room room){
+    /*private void updateRoomSchedulePerDay(Room room){       до лучших времен
         Boolean[] tmpArray = room.getSchedule();
         for(int i = 0; i < DAYS_PER_WEEK - 1; i++) {
             for (int j = 0; j < HOURS_PER_DAY; j++) {
@@ -238,7 +246,7 @@ public class AutoUpdatableDataBaseHandler{
 
         jdbcTemplateOrganisationDB.update("UPDATE Room SET schedule=? WHERE number=?",
                 room.getSchedule(), room.getNumber());
-    }
+    }*/
 
     /*@Scheduled(cron = "0 5 * * * *")
     @Scheduled(cron = "@hourly")
