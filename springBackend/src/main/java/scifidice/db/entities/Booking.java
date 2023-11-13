@@ -16,18 +16,18 @@ public class Booking {
     private int endTime;
     private String phoneNumber;
     private int roomNumber;
-    private int gameID;
+    private int currentPeople;
     private boolean isPaid;
 
     public Booking(int bookingNumber, String phoneNumber, LocalDate beginDate, LocalDate endDate, int beginTime, int endTime, int roomNumber, boolean isPaid) {
+        this.bookingNumber = bookingNumber;
         this.beginDate = beginDate;
         this.endDate = endDate;
         this.beginTime = beginTime;
         this.endTime = endTime;
         this.phoneNumber = phoneNumber;
         this.roomNumber = roomNumber;
-        this.gameID = -1;
-        this.bookingNumber = bookingNumber;
+        currentPeople = 0;
         this.isPaid = isPaid;
     }
 }

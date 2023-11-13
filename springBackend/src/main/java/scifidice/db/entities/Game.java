@@ -8,13 +8,13 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class Game {
-    private int id;
+    private int gameId;
     private String name;
     private String rules;
     private boolean isTaken;
 
-    public Game(int id, String name, String rules) {
-        this.id = id;
+    public Game(int gameId, String name, String rules) {
+        this.gameId = gameId;
         this.name = name;
         this.rules = rules;
         isTaken=false;
