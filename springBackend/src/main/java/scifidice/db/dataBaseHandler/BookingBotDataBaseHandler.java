@@ -91,7 +91,7 @@ public class BookingBotDataBaseHandler {
         Boolean[] tmpArray = room.getSchedule();
 
         long beginDiff = dayNumberRelativeToToday(beginDate);
-
+        //TODO проверка массива boolean из мапы
         if (beginDate.isEqual(endDate)) {
             for (int i = beginTime; i < endTime; i++) {
                 if (tmpArray[(int) (beginDiff * HOURS_PER_DAY + i)]) {
@@ -149,7 +149,7 @@ public class BookingBotDataBaseHandler {
                 tmpArray[(int) (endDiff * HOURS_PER_DAY + i)] = true;
             }
         }
-
+        //TODO обновление в hashMap BookingTime
         room.setSchedule(tmpArray);
         jdbcTemplateOrganisationDB.update("UPDATE Room SET schedule=? WHERE number=?", room.getSchedule(), roomNumber);
     }
