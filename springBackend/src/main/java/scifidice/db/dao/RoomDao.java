@@ -16,10 +16,10 @@ public class RoomDao {
     public RoomDao(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
-    public Optional<Room> getRoomByNumber(int number){
+    public Room getRoomByNumber(int number){
         return jdbcTemplate.query("SELECT * FROM Room WHERE number=?",
                         new Object[]{number}, new RoomMapper()).
-                stream().findAny();
+                stream().findAny().orElse(null);
     }
 
     public void add(Room room) {
