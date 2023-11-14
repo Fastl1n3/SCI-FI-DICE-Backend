@@ -88,7 +88,6 @@ public class BookingBotDataBaseHandler {
         if (room == null) {
             return false;
         }
-//TODO ;lkasdjfwqepoiurwqoitpeuhakjshdfkjahlsdgjhsakglskdjfg;sd;lkgxcmnv,biopqertopwieurtkjhdlfgsdfgkhjkljhsdfga[wpioeutqwpeoirut
         Boolean[] tmpArray = room.getSchedule();
 
         long beginDiff = dayNumberRelativeToToday(beginDate);

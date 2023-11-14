@@ -18,7 +18,6 @@ public class BookingMapper implements RowMapper<Booking> {
         booking.setEndTime(resultSet.getInt("endTime"));
         booking.setPhoneNumber(resultSet.getString("phoneNumber"));
         booking.setRoomNumber(resultSet.getInt("roomNumber"));
-        booking.setGameID(resultSet.getInt("gameID"));
         booking.setPaid(resultSet.getBoolean("ispaid"));
 
         return booking;

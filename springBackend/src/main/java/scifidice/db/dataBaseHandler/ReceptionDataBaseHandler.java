@@ -27,7 +27,6 @@ public class ReceptionDataBaseHandler {
     private final RoomDao roomDao;
     private final InfoSender infoSender;
     private Booking lastBooking;
-
     @Autowired
     public ReceptionDataBaseHandler(BookingDao bookingDao, GameDao gameDao, RoomDao roomDao, InfoSender infoSender) {
         this.bookingDao = bookingDao;
@@ -80,7 +79,7 @@ public class ReceptionDataBaseHandler {
     public ClientInformation payBooking(int gameID, int peopleNumber) {
         Room room = getRoom(lastBooking);
 
-        if (peopleNumber > room.getMaxPersonNumber()) {
+        if (peopleNumber > room.getMaxPeopleNumber()) {
             return new ClientInformation(
                     0, 0, 0, null, ReceptionCodeAnswer.ILLEGAL_PEOPLE_NUMBER
             );
@@ -105,7 +104,7 @@ public class ReceptionDataBaseHandler {
         updateLastVisit(lastBooking.getPhoneNumber());
 
         if (isLate()) {
-            updateCurrentPeopleNumberByRoomNumber(lastBooking.getRoomNumber(), peopleNumber);
+            bookingDao.updateCurrentPeopleByRoomNumber(peopleNumber,lastBooking.getRoomNumber());
             try {
                 infoSender.sendToAdminRoomInfo(lastBooking.getRoomNumber(), getTodayBeginBookingList());
             } catch (WrongRoomNumberException e) {

@@ -11,7 +11,6 @@ public class GameMapper implements RowMapper<Game> {
     public Game mapRow(ResultSet resultSet, int i) throws SQLException {
         Game game = new Game();
 
-        game.setId(resultSet.getInt("id"));
         game.setName(resultSet.getString("name"));
         game.setRules(resultSet.getString("rules"));
         game.setTaken(resultSet.getBoolean("isTaken"));

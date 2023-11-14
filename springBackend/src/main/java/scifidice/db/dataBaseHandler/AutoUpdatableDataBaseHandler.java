@@ -13,7 +13,6 @@ import scifidice.db.entities.Booking;
 import scifidice.db.entities.Game;
 import scifidice.db.entities.Person;
 import scifidice.infoBot.Notification;
-import scifidice.db.mapper.PersonMapper;
 import scifidice.Entity.*;
 
 import java.sql.Date;
@@ -205,7 +204,7 @@ public class AutoUpdatableDataBaseHandler{
     }
 
     private void setCurrentPeopleNumberByRoomNumber(int roomNumber){
-        bookingDao.updateCurrentPeopleByRoomNumber(roomNumber);
+        bookingDao.setZeroPeopleByRoomNumber(roomNumber);
     }
 
     private String getInfoBotChatIDByPhoneNumber(String phoneNumber){

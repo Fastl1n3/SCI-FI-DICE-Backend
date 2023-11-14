@@ -35,11 +35,6 @@ public class RoomDao {
                 room.getNumber(), room.getPassword(), room.getMaxPeopleNumber());
     }
 
-    public void updateCurrentPeopleNumberByRoomNumber(int roomNumber) {
-        jdbcTemplate.update("UPDATE Room SET currentpersonnumber=? WHERE number=?",
-                0, roomNumber);
-    }
-
     public void updatePassword(int roomNumber, String password) {
         jdbcTemplate.update("UPDATE Room SET password=? WHERE number=?",
                 password, roomNumber);
