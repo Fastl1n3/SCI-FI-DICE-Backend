@@ -9,11 +9,11 @@ import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 import scifidice.Entity.HoursPair;
 import scifidice.Entity.RoomInfo;
 import scifidice.controllers.AdminController;
+import scifidice.db.dao.BookingDao;
 import scifidice.db.dao.RoomDao;
 import scifidice.db.entities.Booking;
 import scifidice.db.entities.Room;
 import scifidice.db.mapper.BookingMapper;
-import scifidice.db.mapper.RoomMapper;
 
 import java.time.LocalTime;
 import java.util.List;
@@ -29,11 +29,13 @@ public class InfoSender {
 
     private final AdminController adminController;
     private final RoomDao roomDao;
+    private final BookingDao bookingDao;
 
     @Autowired
-    public InfoSender(AdminController adminController, RoomDao roomDao) {
+    public InfoSender(AdminController adminController, RoomDao roomDao, BookingDao bookingDao) {
         this.adminController = adminController;
         this.roomDao = roomDao;
+        this.bookingDao = bookingDao;
     }
 
     @EventListener
@@ -49,16 +51,11 @@ public class InfoSender {
     }
 
     public void sendToAdminRoomInfo(int roomNumber, List<Booking> todayBeginBookingList) throws WrongRoomNumberException {
-        Room room
-        Room room = jdbcTemplateOrganisationDB.
-                query("SELECT * FROM room WHERE number=?", new Object[]{roomNumber}, new RoomMapper()).
-                stream().findAny().orElse(null);
+        Room room = roomDao.getRoomByNumber(roomNumber);
         if (room == null) {
             throw new WrongRoomNumberException("wrong room number");
         }
-        Booking booking = jdbcTemplateOrganisationDB.
-                query("SELECT * FROM room WHERE room_number=?", new Object[]{roomNumber}, new BookingMapper()).
-                stream().findAny().orElse(null);
+        Booking booking = bookingDao.getByRoomNumber(roomNumber);
         if (booking == null) {
             throw new WrongRoomNumberException("wrong room number");
         }

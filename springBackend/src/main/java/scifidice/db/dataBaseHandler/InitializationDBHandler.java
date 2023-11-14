@@ -25,21 +25,13 @@ public class InitializationDBHandler {
     }
 
     public void defaultInitialization() throws IOException {
-        if (isGameTableEmpty()) {
+        if (gameDao.checkEmpty()) {
             initGamesTable();
         }
 
-        if (isRoomTableEmpty()) {
+        if (roomDao.checkEmpty()) {
             initRoomTable();
         }
-    }
-
-    private boolean isRoomTableEmpty() {
-        return roomDao.checkEmpty();
-    }
-
-    private boolean isGameTableEmpty() {
-        return gameDao.checkEmpty();
     }
 
     private void initGamesTable() throws IOException {
