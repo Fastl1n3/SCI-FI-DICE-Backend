@@ -7,8 +7,11 @@ import scifidice.db.entities.Person;
 import scifidice.db.mapper.PersonMapper;
 
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+
+import static scifidice.config.SpringConfig.NSK_ZONE_ID;
 
 @Component
 public class PersonDao {
@@ -33,6 +36,10 @@ public class PersonDao {
                 person.getPhoneNumber(), person.isBlackMark(),
                 Date.valueOf(person.getLastVisit()), person.getDiscount(),
                 person.getBookingBotChatID(), person.getInfoBotChatID());
+    }
+    public void updateLastVisitByPhoneNumber(String phoneNumber){
+        jdbcTemplate.update("UPDATE Person SET lastvisit=? WHERE phonenumber=?",
+                Date.valueOf(LocalDate.now(NSK_ZONE_ID)), phoneNumber);
     }
     public int updatePhoneNumberByBookingBotChatID(String phoneNumber, String bookingBotChatID) {
         return jdbcTemplate.update("UPDATE Person SET phone_number=? WHERE bookingbot_chatid=?",

@@ -164,7 +164,7 @@ public class AutoUpdatableDataBaseHandler{
         todayBeginBookingList.remove(booking);
         List<Game> gamesToChange = bookingAndGamesDao.getGamesByBooking(booking);
         for(Game game: gamesToChange) {
-            gameDao.updateIsTakenByGame(game);
+            gameDao.updateIsTakenByGameId(game.getGameId(), false);
         }
         bookingAndGamesDao.deleteGamesByBookingId(booking.getBookingNumber());
     }

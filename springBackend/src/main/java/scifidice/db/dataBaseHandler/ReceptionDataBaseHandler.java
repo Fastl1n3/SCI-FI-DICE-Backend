@@ -6,12 +6,12 @@ import scifidice.Entity.ClientInformation;
 import scifidice.Entity.ReceptionCodeAnswer;
 import scifidice.db.dao.BookingDao;
 import scifidice.db.dao.GameDao;
+import scifidice.db.dao.PersonDao;
 import scifidice.db.dao.RoomDao;
 import scifidice.db.entities.Booking;
 import scifidice.db.entities.Game;
 import scifidice.db.entities.Room;
 
-import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -23,13 +23,16 @@ import static scifidice.db.dataBaseHandler.AutoUpdatableDataBaseHandler.getToday
 @Component
 public class ReceptionDataBaseHandler {
     private final BookingDao bookingDao;
+    private final PersonDao personDao;
     private final GameDao gameDao;
     private final RoomDao roomDao;
     private final InfoSender infoSender;
     private Booking lastBooking;
+
     @Autowired
-    public ReceptionDataBaseHandler(BookingDao bookingDao, GameDao gameDao, RoomDao roomDao, InfoSender infoSender) {
+    public ReceptionDataBaseHandler(BookingDao bookingDao, PersonDao personDao, GameDao gameDao, RoomDao roomDao, InfoSender infoSender) {
         this.bookingDao = bookingDao;
+        this.personDao = personDao;
         this.gameDao = gameDao;
         this.roomDao = roomDao;
         this.infoSender = infoSender;
@@ -96,24 +99,18 @@ public class ReceptionDataBaseHandler {
                     0, 0, 0, null, ReceptionCodeAnswer.FAILED_PAY
             );
         }
-
-        takeGame(gameID);
+        gameDao.updateIsTakenByGameId(gameID, true);
 
         updateBookingEntry(gameID, true);
+        personDao.updateLastVisitByPhoneNumber(lastBooking.getPhoneNumber());
 
-        updateLastVisit(lastBooking.getPhoneNumber());
 
-        if (isLate()) {
-            bookingDao.updateCurrentPeopleByBookingNumber(peopleNumber,lastBooking.getBookingNumber());
-            try {
-                infoSender.sendToAdminRoomInfo(lastBooking.getRoomNumber(), getTodayBeginBookingList());
-            } catch (WrongRoomNumberException e) {
-                System.out.println(e.getMessage());
-            }
-        } else {
-            bookingDao.updateCurrentPeopleByBookingNumber(peopleNumber, lastBooking.getBookingNumber());
+        bookingDao.updateCurrentPeopleByBookingNumber(peopleNumber, lastBooking.getBookingNumber());
+        try {
+            infoSender.sendToAdminRoomInfo(lastBooking.getRoomNumber(), getTodayBeginBookingList());
+        } catch (WrongRoomNumberException e) {
+            System.out.println(e.getMessage());
         }
-        /////////////////////////////////////////////
 
         return new ClientInformation(lastBooking.getRoomNumber(),
                 lastBooking.getBeginTime(), lastBooking.getEndTime(),
@@ -125,17 +122,12 @@ public class ReceptionDataBaseHandler {
         int newPeopleNumber;
 
         Room room = getRoom(lastBooking);
+        oldPeopleNumber = lastBooking.getCurrentPeopleNumber();
 
-        if (isLate()) {
-            oldPeopleNumber = room.getCurrentPersonNumber();
-        } else {
-            Room roomData = getRoom(lastBooking);
-            oldPeopleNumber = roomData.getCurrentPersonNumber();
-        }
 
         newPeopleNumber = oldPeopleNumber + peopleNumber;
 
-        if (newPeopleNumber > room.getMaxPersonNumber()) {
+        if (newPeopleNumber > room.getMaxPeopleNumber()) {
             return ReceptionCodeAnswer.ILLEGAL_PEOPLE_NUMBER;
         }
 
@@ -143,16 +135,13 @@ public class ReceptionDataBaseHandler {
             return ReceptionCodeAnswer.FAILED_PAY;
         }
 
-        if (isLate()) {
-            updateCurrentPeopleNumberByRoomNumber(lastBooking.getRoomNumber(), newPeopleNumber);
-            try {
-                infoSender.sendToAdminRoomInfo(lastBooking.getRoomNumber(), getTodayBeginBookingList());
-            } catch (WrongRoomNumberException e) {
-                System.out.println(e.getMessage());
-            }
-        } else {
-            updateRoomDataByRoomNumber(lastBooking.getRoomNumber(), newPeopleNumber);
+        bookingDao.updateCurrentPeopleByBookingNumber(newPeopleNumber, lastBooking.getRoomNumber());
+        try {
+            infoSender.sendToAdminRoomInfo(lastBooking.getRoomNumber(), getTodayBeginBookingList());
+        } catch (WrongRoomNumberException e) {
+            System.out.println(e.getMessage());
         }
+
 
         return ReceptionCodeAnswer.SUCCESS;
     }
@@ -173,27 +162,15 @@ public class ReceptionDataBaseHandler {
     private void updateBookingEntry(int gameID, boolean isPaid) {
         jdbcTemplateOrganisationDB.update("UPDATE Booking SET gameID=?, ispaid=? WHERE bookingNumber=?",
                 gameID, isPaid, lastBooking.getBookingNumber());
-
+//TODO заполнять таблицу booking_games
         List<Booking> bookingList = getTodayBeginBookingList();
 
         for (Booking booking : bookingList) {
             if (booking.getBookingNumber() == lastBooking.getBookingNumber()) {
                 booking.setPaid(true);
-                booking.setGameID(gameID);
                 return;
             }
         }
-    }
-
-
-    private void takeGame(int gameID) {
-        jdbcTemplateGamesDB.update("UPDATE Games SET isTaken=? WHERE id=?",
-                true, gameID);
-    }
-
-    private void updateLastVisit(String phoneNumber) {
-        jdbcTemplateOrganisationDB.update("UPDATE Person SET lastvisit=? WHERE phonenumber=?",
-                Date.valueOf(LocalDate.now(NSK_ZONE_ID)), phoneNumber);
     }
 
     private boolean pay() {

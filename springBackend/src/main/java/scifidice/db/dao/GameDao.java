@@ -37,9 +37,9 @@ public class GameDao {
                 game.getRules(), game.isTaken());
     }
 
-    public void updateIsTakenByGame(Game game) {
+    public void updateIsTakenByGameId(int gameId, boolean isTaken) {
         jdbcTemplate.update("UPDATE Game SET is_taken=? WHERE id=?",
-                false, game.getGameId());
+                isTaken, gameId);
     }
 
     public void deleteGameById(int gameID) {
