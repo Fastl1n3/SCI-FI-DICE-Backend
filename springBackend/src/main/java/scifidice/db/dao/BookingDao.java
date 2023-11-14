@@ -48,13 +48,9 @@ public class BookingDao {
                 booking.isPaid());
     }
 
-    public void setZeroPeopleByRoomNumber(int roomNumber) {
-        jdbcTemplate.update("UPDATE Booking SET current_people=? WHERE number=?",
-                0, roomNumber);
-    }
-    public void updateCurrentPeopleByRoomNumber(int currentPeople, int roomNumber) {
-        jdbcTemplate.update("UPDATE Booking SET current_people=? WHERE number=?",
-                currentPeople, roomNumber);
+    public void updateCurrentPeopleByBookingNumber(int currentPeople, int bookingNumber) {
+        jdbcTemplate.update("UPDATE Booking SET current_people=? WHERE booking_number=?",
+                currentPeople, bookingNumber);
     }
     public void deleteByBooking(Booking booking) {
         jdbcTemplate.update("DELETE FROM Booking WHERE booking_number=?",

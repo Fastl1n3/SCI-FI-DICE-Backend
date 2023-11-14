@@ -193,7 +193,7 @@ public class AutoUpdatableDataBaseHandler{
         for (Booking booking : todayBeginBookingList) {
             if (booking.getEndTime() == (currentTime + 1) && booking.isPaid()) {
                 try {
-                    setCurrentPeopleNumberByRoomNumber(booking.getRoomNumber());
+                    //setCurrentPeopleNumberByRoomNumber(booking.getRoomNumber());
                     infoSender.sendToAdminRoomInfo(booking.getRoomNumber(), getTodayBeginBookingList());
                 }
                 catch (NullPointerException | WrongRoomNumberException e) {
@@ -203,9 +203,9 @@ public class AutoUpdatableDataBaseHandler{
         }
     }
 
-    private void setCurrentPeopleNumberByRoomNumber(int roomNumber){
+    /*private void setCurrentPeopleNumberByRoomNumber(int roomNumber){
         bookingDao.setZeroPeopleByRoomNumber(roomNumber);
-    }
+    }*/
 
     private String getInfoBotChatIDByPhoneNumber(String phoneNumber){
         Person person = personDao.getPersonByPhoneNumber(phoneNumber);

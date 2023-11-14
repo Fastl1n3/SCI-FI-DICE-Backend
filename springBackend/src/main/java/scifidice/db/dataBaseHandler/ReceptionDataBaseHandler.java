@@ -104,14 +104,14 @@ public class ReceptionDataBaseHandler {
         updateLastVisit(lastBooking.getPhoneNumber());
 
         if (isLate()) {
-            bookingDao.updateCurrentPeopleByRoomNumber(peopleNumber,lastBooking.getRoomNumber());
+            bookingDao.updateCurrentPeopleByBookingNumber(peopleNumber,lastBooking.getBookingNumber());
             try {
                 infoSender.sendToAdminRoomInfo(lastBooking.getRoomNumber(), getTodayBeginBookingList());
             } catch (WrongRoomNumberException e) {
                 System.out.println(e.getMessage());
             }
         } else {
-            updateRoomDataByRoomNumber(lastBooking.getRoomNumber(), peopleNumber);
+            bookingDao.updateCurrentPeopleByBookingNumber(peopleNumber, lastBooking.getBookingNumber());
         }
         /////////////////////////////////////////////
 
