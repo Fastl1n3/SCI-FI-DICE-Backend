@@ -4,24 +4,28 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import scifidice.db.dao.GameDao;
+import scifidice.db.dao.RoomDao;
 import scifidice.db.entities.Game;
 import scifidice.db.entities.Room;
 
 @Component
-public class AdministratorDataBaseHandler extends DataBaseEntityAdder{
-    private final JdbcTemplate jdbcTemplateGamesDB;
-    private final JdbcTemplate jdbcTemplateOrganisationDB;
+public class AdministratorDataBaseHandler {
+
+    private final GameDao gameDao;
+
+    private final RoomDao roomDao;
 
     @Autowired
-    public AdministratorDataBaseHandler(JdbcTemplate jdbcTemplateOrganisationDB, JdbcTemplate jdbcTemplateGamesDB) {
-        this.jdbcTemplateOrganisationDB=jdbcTemplateOrganisationDB;
-        this.jdbcTemplateGamesDB = jdbcTemplateGamesDB;
+    public AdministratorDataBaseHandler(GameDao gameDao, RoomDao roomDao) {
+        this.gameDao = gameDao;
+        this.roomDao = roomDao;
     }
 
     public boolean addGame(String name, String rules){
         Game game = new Game(name, rules);
         try {
-            addGameToTable(game, jdbcTemplateGamesDB);
+            gameDao.add(game);
         } catch (DataAccessException e){
             return false;
         }
@@ -31,25 +35,11 @@ public class AdministratorDataBaseHandler extends DataBaseEntityAdder{
     public boolean addRoom(int roomNumber, String password, int maxPersonNumber){
         Room room = new Room(roomNumber, password, maxPersonNumber);
         try {
-            addRoomToTable(room, jdbcTemplateOrganisationDB);
+            roomDao.add(room);
         } catch (DataAccessException e){
             return false;
         }
         return true;
     }
 
-    public void deleteGame(int gameID){
-        jdbcTemplateGamesDB.update("DELETE FROM Games WHERE id=?",
-                gameID);
-    }
-
-    public void deleteRoom(int roomNumber){
-        jdbcTemplateOrganisationDB.update("DELETE FROM Room WHERE number=?",
-                roomNumber);
-    }
-
-    public void changePassword(int roomNumber, String password){
-        jdbcTemplateOrganisationDB.update("UPDATE Room SET password=? WHERE number=?",
-                password, roomNumber);
-    }
 }

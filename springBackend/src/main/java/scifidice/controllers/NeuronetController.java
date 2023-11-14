@@ -33,7 +33,7 @@ public class NeuronetController {
     @Autowired
     private AdminController adminController;
 
-    private LocalTime startTime = null;
+    private LocalTime[] startTime = new LocalTime[5];
 
     @PostMapping(value = "/setPeople")
     private String getDate(@RequestParam("time") String time, @RequestParam("room") int room, @RequestParam("people") int people,  @RequestParam("image") MultipartFile img) {
@@ -54,11 +54,11 @@ public class NeuronetController {
                     }
                     else {
                         System.out.println(LocalDateTime.now(NSK_ZONE_ID) + " МНОГО ЧЕЛ");
-                        if (startTime == null) {
-                            startTime = LocalTime.now(NSK_ZONE_ID);
+                        if (startTime[room - 1] == null) {
+                            startTime[room - 1] = LocalTime.now(NSK_ZONE_ID);
                         }
-                        if (MINUTES.between(startTime, LocalTime.now(NSK_ZONE_ID)) > 5) {
-                            startTime = null;
+                        if (MINUTES.between(startTime[room - 1], LocalTime.now(NSK_ZONE_ID)) > 5) {
+                            startTime[room - 1] = null;
                             System.out.println(LocalDateTime.now(NSK_ZONE_ID) + " MANY PEOPLE WARNING in room #" + room +
                                     "count: " + people + ".");
                             adminController.sendMessageToAdmin(new AdminMessage(AdminMessageType.ALARM,LocalDateTime.now(NSK_ZONE_ID).format(dateTimeFormatter) + " В КОМНАТЕ #"+ room +

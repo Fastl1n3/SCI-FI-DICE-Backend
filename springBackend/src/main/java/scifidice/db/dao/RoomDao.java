@@ -21,7 +21,8 @@ public class RoomDao {
                         new Object[]{number}, new RoomMapper()).
                 stream().findAny();
     }
-    public void add(Room room, JdbcTemplate jdbcTemplate) {
+
+    public void add(Room room) {
         jdbcTemplate.update("INSERT INTO Room VALUES(?, ?, ?)",
                 room.getNumber(), room.getPassword(), room.getMaxPeopleNumber());
     }
@@ -33,7 +34,7 @@ public class RoomDao {
         jdbcTemplate.update("UPDATE Room SET password=? WHERE number=?",
                 password, roomNumber);
     }
-    public void deleteById(int roomNumber) {
+    public void deleteRoomByNumber(int roomNumber) {
         jdbcTemplate.update("DELETE FROM Room WHERE number=?",
                 roomNumber);
     }

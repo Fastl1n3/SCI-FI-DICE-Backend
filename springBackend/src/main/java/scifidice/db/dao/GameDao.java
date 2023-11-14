@@ -27,7 +27,7 @@ public class GameDao {
                 false, game.getGameId());
     }
 
-    public void deleteById(int gameID) {
+    public void deleteGameById(int gameID) {
         jdbcTemplate.update("DELETE FROM Game WHERE game_id=?",
                 gameID);
     }

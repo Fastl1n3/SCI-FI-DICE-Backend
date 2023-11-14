@@ -5,15 +5,15 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import scifidice.db.dao.BookingAndGamesDao;
+import scifidice.db.dao.BookingDao;
+import scifidice.db.dao.GameDao;
+import scifidice.db.dao.PersonDao;
 import scifidice.db.entities.Booking;
 import scifidice.db.entities.Game;
 import scifidice.db.entities.Person;
-import scifidice.db.entities.Room;
-import scifidice.db.mapper.GameMapper;
 import scifidice.infoBot.Notification;
-import scifidice.db.mapper.BookingMapper;
 import scifidice.db.mapper.PersonMapper;
-import scifidice.db.mapper.RoomMapper;
 import scifidice.Entity.*;
 
 import java.sql.Date;
@@ -43,26 +43,32 @@ public class AutoUpdatableDataBaseHandler{
     @Autowired
     private Notification notification;
 
+    private final BookingDao bookingDao;
+
+    private final GameDao gameDao;
+
+    private final BookingAndGamesDao bookingAndGamesDao;
+
+    private final PersonDao personDao;
+
     @Autowired
-    public AutoUpdatableDataBaseHandler(JdbcTemplate jdbcTemplateOrganisationDB, JdbcTemplate jdbcTemplateGamesDB){
+    public AutoUpdatableDataBaseHandler(JdbcTemplate jdbcTemplateOrganisationDB, JdbcTemplate jdbcTemplateGamesDB, BookingDao bookingDao, GameDao gameDao, BookingAndGamesDao bookingAndGamesDao, PersonDao personDao){
         this.jdbcTemplateOrganisationDB = jdbcTemplateOrganisationDB;
         this.jdbcTemplateGamesDB = jdbcTemplateGamesDB;
+        this.bookingDao = bookingDao;
+        this.gameDao = gameDao;
+        this.bookingAndGamesDao = bookingAndGamesDao;
+        this.personDao = personDao;
     }
 
     @Scheduled(cron = "0 1 0 * * *")
     public void initTodayBeginBookingList(){
-        todayBeginBookingList = jdbcTemplateOrganisationDB.
-                query("SELECT * FROM Booking WHERE beginDate=?",
-                        new Object[]{Date.valueOf(LocalDate.now(NSK_ZONE_ID))},
-                        new BookingMapper());
+        todayBeginBookingList = bookingDao.getAllByDate(Date.valueOf(LocalDate.now(NSK_ZONE_ID)));
     }
 
     @Scheduled(cron = "@daily")
-    public void deleteOldBooking(){
-        List<Booking> allBooking = jdbcTemplateOrganisationDB.
-                query("SELECT * FROM Booking",
-                        new Object[]{},
-                        new BookingMapper());
+    public void deleteOldBooking() {
+        List<Booking> allBooking = bookingDao.getAll();
 
         int size = allBooking.size();
 
@@ -83,15 +89,12 @@ public class AutoUpdatableDataBaseHandler{
     }
 
     public Optional<CheckPeopleInformation> checkPeople(int roomNumber, int actualPeopleNumber, LocalDateTime takePictureTime) throws WrongRoomNumberException {
-        Booking actualBooking = jdbcTemplateOrganisationDB.query("SELECT * FROM Booking WHERE room_number=?",
-                        new Object[]{roomNumber}, new BookingMapper()).stream().findAny().
-                orElse(null);
+        Booking actualBooking = bookingDao.getByRoomNumber(roomNumber);
         if(actualBooking == null){
             throw new WrongRoomNumberException("room is null");
         }
 
         for (Booking booking : todayBeginBookingList) {
-
             LocalDate endDate = booking.getEndDate();
             int endTime = booking.getEndTime();
             if(booking.getEndTime() == 24){
@@ -158,17 +161,13 @@ public class AutoUpdatableDataBaseHandler{
     }
 
     private void deleteBooking(Booking booking){
-        jdbcTemplateOrganisationDB.update("DELETE FROM Booking WHERE booking_number=?",
-                booking.getBookingNumber());
+        bookingDao.deleteByBooking(booking);
         todayBeginBookingList.remove(booking);
-        List<Game> gamesToChange = jdbcTemplateOrganisationDB.query("SELECT * FROM Booking_Games WHERE booking_number = ?",
-                new Object[]{booking.getBookingNumber()}, new GameMapper());
-        for(Game game: gamesToChange){
-            jdbcTemplateGamesDB.update("UPDATE Games SET isTaken=? WHERE id=?",
-                    false, game.getGameId());
+        List<Game> gamesToChange = bookingAndGamesDao.getGamesByBooking(booking);
+        for(Game game: gamesToChange) {
+            gameDao.updateIsTakenByGame(game);
         }
-        jdbcTemplateOrganisationDB.update("DELETE FROM Booking_Games WHERE booking_number=?",
-                booking.getBookingNumber());
+        bookingAndGamesDao.deleteGamesByBookingId(booking.getBookingNumber());
     }
 
     @Scheduled(cron = "0 45 * * * *")
@@ -206,14 +205,11 @@ public class AutoUpdatableDataBaseHandler{
     }
 
     private void setCurrentPeopleNumberByRoomNumber(int roomNumber){
-        jdbcTemplateOrganisationDB.update("UPDATE Booking SET current_people=? WHERE number=?",
-                0, roomNumber);
+        bookingDao.updateCurrentPeopleByRoomNumber(roomNumber);
     }
 
     private String getInfoBotChatIDByPhoneNumber(String phoneNumber){
-        Person person = jdbcTemplateOrganisationDB.query("SELECT * FROM Person WHERE phoneNumber=?",
-                        new Object[]{phoneNumber}, new PersonMapper()).stream().findAny().
-                orElse(null);
+        Person person = personDao.getPersonByPhoneNumber(phoneNumber);
         if (person == null) {
             throw new NullPointerException("PERSON WITH THIS PHONENUMBER NOT EXIST, phonenumber : " + phoneNumber);
         }

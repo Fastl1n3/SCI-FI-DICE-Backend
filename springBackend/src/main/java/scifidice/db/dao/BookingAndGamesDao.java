@@ -18,8 +18,12 @@ public class BookingAndGamesDao {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public List<Game> getAllByBooking(Booking booking) {
+    public List<Game> getGamesByBooking(Booking booking) {
         return jdbcTemplate.query("SELECT * FROM Booking_Games WHERE booking_number = ?",
                 new Object[]{booking.getBookingNumber()}, new GameMapper());
+    }
+    public void deleteGamesByBookingId(int bookingId) {
+        jdbcTemplate.update("DELETE FROM Booking_Games WHERE booking_number=?",
+                bookingId);
     }
 }

@@ -22,9 +22,9 @@ public class BookingDao {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public Optional<Booking> getByRoomNumber(int roomNumber) {
+    public Booking getByRoomNumber(int roomNumber) {
         return jdbcTemplate.query("SELECT * FROM Booking WHERE room_number=?",
-                new Object[]{roomNumber}, new BookingMapper()).stream().findAny();
+                new Object[]{roomNumber}, new BookingMapper()).stream().findAny().orElse(null);
     }
 
     public List<Booking> getAll() {

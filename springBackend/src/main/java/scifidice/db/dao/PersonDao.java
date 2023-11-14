@@ -18,9 +18,9 @@ public class PersonDao {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public Optional<Person> getPersonByPhoneNumber(String phoneNumber) {
+    public Person getPersonByPhoneNumber(String phoneNumber) {
         return jdbcTemplate.query("SELECT * FROM Person WHERE phoneNumber=?",
-                new Object[]{phoneNumber}, new PersonMapper()).stream().findAny();
+                new Object[]{phoneNumber}, new PersonMapper()).stream().findAny().orElse(null);
     }
 
     public Person getPersonByBookingBotChatId(String bookingChatId) {
