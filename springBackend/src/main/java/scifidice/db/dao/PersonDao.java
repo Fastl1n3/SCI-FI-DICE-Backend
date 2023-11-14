@@ -38,4 +38,9 @@ public class PersonDao {
         return jdbcTemplate.update("UPDATE Person SET phone_number=? WHERE bookingbot_chatid=?",
                 phoneNumber, bookingBotChatID);
     }
+    public int setInfoBotChatIdByPhone(String phoneNumber, String infoBotChatID) {
+        return jdbcTemplate.update("UPDATE Person SET infobot_chatid=? WHERE phone_number=?",
+                infoBotChatID, phoneNumber);
+    }
+
 }

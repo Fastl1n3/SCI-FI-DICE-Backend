@@ -3,20 +3,23 @@ package scifidice.db.dataBaseHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-import scifidice.db.mapper.GameMapper;
+import scifidice.db.dao.GameDao;
+import scifidice.db.dao.PersonDao;
 import scifidice.db.entities.Game;
 
 import java.util.List;
 
 @Component
 public class InformationBotDataBaseHandler {
-    private final JdbcTemplate jdbcTemplateGamesDB;
-    private final JdbcTemplate jdbcTemplateOrganisationDB;
+
+    private final GameDao gameDao;
+
+    private final PersonDao personDao;
 
     @Autowired
-    public InformationBotDataBaseHandler(JdbcTemplate jdbcTemplateOrganisationDB, JdbcTemplate jdbcTemplateGamesDB) {
-        this.jdbcTemplateOrganisationDB = jdbcTemplateOrganisationDB;
-        this.jdbcTemplateGamesDB = jdbcTemplateGamesDB;
+    public InformationBotDataBaseHandler(GameDao gameDao, PersonDao personDao) {
+        this.gameDao = gameDao;
+        this.personDao = personDao;
     }
 
     public int authorization(String phoneNumber, String infoBotChatID) {
@@ -24,9 +27,7 @@ public class InformationBotDataBaseHandler {
     }
 
     public String getRules(int gameID) {
-        Game game = jdbcTemplateGamesDB.query("SELECT * FROM Games WHERE id=?",
-                        new Object[]{gameID}, new GameMapper())
-                .stream().findAny().orElse(null);
+        Game game = gameDao.getGameByGameId(gameID);
         if (game == null) {
             return null;
         } else {
@@ -35,11 +36,10 @@ public class InformationBotDataBaseHandler {
     }
 
     public List<Game> getGames() {
-        return jdbcTemplateGamesDB.query("SELECT * FROM games ORDER BY id", new Object[]{}, new GameMapper());
+        return gameDao.getAllGames();
     }
 
     private int updatePerson(String phoneNumber, String infoBotChatID) {
-        return jdbcTemplateOrganisationDB.update("UPDATE Person SET infobotchatid=? WHERE phoneNumber=?",
-                infoBotChatID, phoneNumber);
+        return personDao.setInfoBotChatIdByPhone(phoneNumber, infoBotChatID);
     }
 }
