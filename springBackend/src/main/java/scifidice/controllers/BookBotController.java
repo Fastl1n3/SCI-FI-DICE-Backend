@@ -32,7 +32,7 @@ public class BookBotController {
             System.out.println(LocalDateTime.now(NSK_ZONE_ID).format(dateTimeFormatter) + " DATE REQUEST: " + dateStr);
             adminController.sendMessageToAdmin(new AdminMessage(AdminMessageType.LOG, LocalDateTime.now(NSK_ZONE_ID).format(dateTimeFormatter) +" Запрос даты: " + dateStr + "."));
             LocalDate date = HandlerDateTime.getDateObject(dateStr); // проверка даты на валидность
-            ArrayList<HoursPair> hourPairs =  bookingBotDataBaseHandler.getScheduleForDateByRoomNumber((int) dayNumberRelativeToToday(date), room);
+            ArrayList<HoursPair> hourPairs =  bookingBotDataBaseHandler.getScheduleForDateByRoomNumber(date, room);
             StringBuilder dateAns = HandlerDateTime.hoursPairsHandler(hourPairs);
             dateAns.insert(0, "ROOM #" + room + "\n");
             return new DateResponse(0, dateAns.toString());

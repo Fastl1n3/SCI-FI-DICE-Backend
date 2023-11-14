@@ -1,23 +1,23 @@
 package scifidice.db.dataBaseHandler;
 
-import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.stereotype.Component;
 import org.springframework.util.ResourceUtils;
+import scifidice.Entity.GamesList;
+import scifidice.Entity.RoomsList;
 import scifidice.db.dao.GameDao;
 import scifidice.db.dao.RoomDao;
 import scifidice.db.entities.Game;
 import scifidice.db.entities.Room;
-import scifidice.db.mapper.GameMapper;
-import scifidice.db.mapper.RoomMapper;
 
 import java.io.IOException;
 import java.util.List;
 
 @Component
-public class InitializationDBHandler extends DataBaseEntityAdder {
+public class InitializationDBHandler {
 
-private final RoomDao roomDao;
-private final GameDao gameDao;
+    private final RoomDao roomDao;
+    private final GameDao gameDao;
 
     public InitializationDBHandler(RoomDao roomDao, GameDao gameDao) {
         this.roomDao = roomDao;
@@ -35,19 +35,19 @@ private final GameDao gameDao;
     }
 
     private boolean isRoomTableEmpty() {
-        return roomDao.getAllRooms().isEmpty();
+        return roomDao.checkEmpty();
     }
 
     private boolean isGameTableEmpty() {
-        return gameDao.getAllGames().isEmpty();
+        return gameDao.checkEmpty();
     }
 
     private void initGamesTable() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
 
-        GamesResponse gamesResponse = objectMapper.readValue(ResourceUtils.getFile("src/main/resources/config.json"), GamesResponse.class);
+        GamesList games = objectMapper.readValue(ResourceUtils.getFile("src/main/resources/config.json"), GamesList.class);
 
-        List<Game> gameList = gamesResponse.getGames();
+        List<Game> gameList = games.getGames();
         for (Game game : gameList) {
             gameDao.add(game);
         }
@@ -56,9 +56,9 @@ private final GameDao gameDao;
     private void initRoomTable() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
 
-        RoomsResponse roomsResponse = objectMapper.readValue(ResourceUtils.getFile("src/main/resources/config.json"), RoomsResponse.class);
+        RoomsList rooms = objectMapper.readValue(ResourceUtils.getFile("src/main/resources/config.json"), RoomsList.class);
 
-        List<Room> roomList = roomsResponse.getRooms();
+        List<Room> roomList = rooms.getRooms();
 
         for (Room room : roomList) {
             roomDao.add(room);

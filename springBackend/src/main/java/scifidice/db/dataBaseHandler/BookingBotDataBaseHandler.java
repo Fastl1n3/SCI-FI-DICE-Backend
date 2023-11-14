@@ -4,6 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import scifidice.db.dao.BookingDao;
+import scifidice.db.dao.PersonDao;
+import scifidice.db.dao.RoomDao;
 import scifidice.db.entities.Booking;
 import scifidice.db.entities.Person;
 import scifidice.db.entities.Room;
@@ -13,7 +16,6 @@ import scifidice.Entity.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 
 import static java.lang.Math.abs;
@@ -23,12 +25,20 @@ import static scifidice.config.SpringConfig.NSK_ZONE_ID;
 import static scifidice.db.dataBaseHandler.AutoUpdatableDataBaseHandler.addToTodayBeginBookingList;
 
 @Component
-public class BookingBotDataBaseHandler extends DataBaseEntityAdder {
-    private final JdbcTemplate jdbcTemplateOrganisationDB;
+public class BookingBotDataBaseHandler {
+
+    private final PersonDao personDao;
+
+    private final RoomDao roomDao;
+
+    private final BookingDao bookingDao;
+
 
     @Autowired
-    public BookingBotDataBaseHandler(JdbcTemplate jdbcTemplateOrganisationDB) {
-        this.jdbcTemplateOrganisationDB = jdbcTemplateOrganisationDB;
+    public BookingBotDataBaseHandler(PersonDao personDao, RoomDao roomDao, BookingDao bookingDao) {
+        this.personDao = personDao;
+        this.roomDao = roomDao;
+        this.bookingDao = bookingDao;
     }
 
     public static long dayNumberRelativeToToday(LocalDate date) {
@@ -36,12 +46,11 @@ public class BookingBotDataBaseHandler extends DataBaseEntityAdder {
     }
 
     public void authorization(String phoneNumber, String bookingBotChatID) throws DataAccessException {
-        addPersonToTable(new Person(phoneNumber, bookingBotChatID), jdbcTemplateOrganisationDB);
+        personDao.addPersonToTable(new Person(phoneNumber, bookingBotChatID));
     }
 
     public boolean isBlackMarkPerson(String bookingChatID) {
-        Person person = jdbcTemplateOrganisationDB.query("SELECT * FROM person WHERE bookingbotchatid=?",
-                new Object[]{bookingChatID}, new PersonMapper()).stream().findAny().orElse(null);
+        Person person = personDao.getPersonByBookingBotChatId(bookingChatID);
         return person.isBlackMark();
     }
 
@@ -108,9 +117,7 @@ public class BookingBotDataBaseHandler extends DataBaseEntityAdder {
     }
 
     public String getPhoneNumberByBookingChatID(String bookingBotChatID) {
-        Person person = jdbcTemplateOrganisationDB.query("SELECT * FROM Person WHERE bookingBotChatID=?",
-                        new Object[]{bookingBotChatID}, new PersonMapper()).
-                stream().findAny().orElse(null);
+        Person person = personDao.getPersonByBookingBotChatId(bookingBotChatID);
         if (person == null) {
             return null;
         } else {
@@ -148,7 +155,7 @@ public class BookingBotDataBaseHandler extends DataBaseEntityAdder {
         jdbcTemplateOrganisationDB.update("UPDATE Room SET schedule=? WHERE number=?", room.getSchedule(), roomNumber);
     }
 
-    public ArrayList<HoursPair> getScheduleForDateByRoomNumber(int dayNumber, int roomNumber) throws WrongRoomNumberException {
+    public ArrayList<HoursPair> getScheduleForDateByRoomNumber(LocalDate date, int roomNumber) throws WrongRoomNumberException {
 //        if (dayNumber < 0 || dayNumber > 6) {
 //            throw new DateTimeParseException("Wrong date", "", dayNumber);
 //        }
@@ -198,7 +205,6 @@ public class BookingBotDataBaseHandler extends DataBaseEntityAdder {
     }
 
     public int updatePhoneNumberByBookingBotChatID(String phoneNumber, String bookingBotChatID) {
-        return jdbcTemplateOrganisationDB.update("UPDATE Person SET phonenumber=? WHERE bookingbotchatid=?",
-                phoneNumber, bookingBotChatID);
+        return personDao.updatePhoneNumberByBookingBotChatID(phoneNumber, bookingBotChatID);
     }
 }

@@ -10,7 +10,6 @@ import scifidice.db.dao.RoomDao;
 import scifidice.db.entities.Booking;
 import scifidice.db.entities.Game;
 import scifidice.db.entities.Room;
-import scifidice.db.mapper.RoomMapper;
 
 import java.sql.Date;
 import java.time.LocalDate;
@@ -22,7 +21,7 @@ import static scifidice.config.SpringConfig.NSK_ZONE_ID;
 import static scifidice.db.dataBaseHandler.AutoUpdatableDataBaseHandler.getTodayBeginBookingList;
 
 @Component
-public class ReceptionDataBaseHandler extends DataBaseEntityAdder {
+public class ReceptionDataBaseHandler {
     private final BookingDao bookingDao;
     private final GameDao gameDao;
     private final RoomDao roomDao;
