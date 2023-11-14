@@ -4,16 +4,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.event.EventListener;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
+import scifidice.Entity.HoursPair;
+import scifidice.Entity.RoomInfo;
 import scifidice.controllers.AdminController;
+import scifidice.db.dao.RoomDao;
+import scifidice.db.entities.Booking;
+import scifidice.db.entities.Room;
 import scifidice.db.mapper.BookingMapper;
 import scifidice.db.mapper.RoomMapper;
-import scifidice.db.entities.Booking;
-import scifidice.Entity.HoursPair;
-import scifidice.db.entities.Room;
-import scifidice.Entity.RoomInfo;
 
 import java.time.LocalTime;
 import java.util.List;
@@ -27,11 +27,14 @@ public class InfoSender {
     @Value("${roomNumber}")
     private int roomNumber;
 
-    @Autowired
-    private AdminController adminController;
+    private final AdminController adminController;
+    private final RoomDao roomDao;
 
     @Autowired
-    private JdbcTemplate jdbcTemplateOrganisationDB;
+    public InfoSender(AdminController adminController, RoomDao roomDao) {
+        this.adminController = adminController;
+        this.roomDao = roomDao;
+    }
 
     @EventListener
     public void handleSessionConnected(SessionSubscribeEvent event) {
@@ -46,6 +49,7 @@ public class InfoSender {
     }
 
     public void sendToAdminRoomInfo(int roomNumber, List<Booking> todayBeginBookingList) throws WrongRoomNumberException {
+        Room room
         Room room = jdbcTemplateOrganisationDB.
                 query("SELECT * FROM room WHERE number=?", new Object[]{roomNumber}, new RoomMapper()).
                 stream().findAny().orElse(null);

@@ -1,28 +1,27 @@
 package scifidice.db.dataBaseHandler;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.util.ResourceUtils;
+import scifidice.db.dao.GameDao;
+import scifidice.db.dao.RoomDao;
 import scifidice.db.entities.Game;
 import scifidice.db.entities.Room;
 import scifidice.db.mapper.GameMapper;
 import scifidice.db.mapper.RoomMapper;
-import scifidice.Entity.*;
 
 import java.io.IOException;
 import java.util.List;
 
 @Component
 public class InitializationDBHandler extends DataBaseEntityAdder {
-    private final JdbcTemplate jdbcTemplateGamesDB;
-    private final JdbcTemplate jdbcTemplateOrganisationDB;
 
-    @Autowired
-    public InitializationDBHandler(JdbcTemplate jdbcTemplateOrganisationDB, JdbcTemplate jdbcTemplateGamesDB) {
-        this.jdbcTemplateGamesDB = jdbcTemplateGamesDB;
-        this.jdbcTemplateOrganisationDB = jdbcTemplateOrganisationDB;
+private final RoomDao roomDao;
+private final GameDao gameDao;
+
+    public InitializationDBHandler(RoomDao roomDao, GameDao gameDao) {
+        this.roomDao = roomDao;
+        this.gameDao = gameDao;
     }
 
     public void defaultInitialization() throws IOException {
@@ -36,11 +35,11 @@ public class InitializationDBHandler extends DataBaseEntityAdder {
     }
 
     private boolean isRoomTableEmpty() {
-        return jdbcTemplateOrganisationDB.query("SELECT * FROM Room", new RoomMapper()).isEmpty();
+        return roomDao.getAllRooms().isEmpty();
     }
 
     private boolean isGameTableEmpty() {
-        return jdbcTemplateGamesDB.query("SELECT * FROM Games", new GameMapper()).isEmpty();
+        return gameDao.getAllGames().isEmpty();
     }
 
     private void initGamesTable() throws IOException {
@@ -50,7 +49,7 @@ public class InitializationDBHandler extends DataBaseEntityAdder {
 
         List<Game> gameList = gamesResponse.getGames();
         for (Game game : gameList) {
-            addGameToTable(game, jdbcTemplateGamesDB);
+            gameDao.add(game);
         }
     }
 
@@ -62,7 +61,7 @@ public class InitializationDBHandler extends DataBaseEntityAdder {
         List<Room> roomList = roomsResponse.getRooms();
 
         for (Room room : roomList) {
-            addRoomToTable(room, jdbcTemplateOrganisationDB);
+            roomDao.add(room);
         }
     }
 

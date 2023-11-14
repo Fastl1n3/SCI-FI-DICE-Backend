@@ -28,7 +28,7 @@ public class PersonDao {
         return jdbcTemplate.query("SELECT * FROM person WHERE bookingbot_chatid=?",
                 new Object[]{bookingChatId}, new PersonMapper()).stream().findAny().orElse(null);
     }
-    void addPersonToTable(Person person) {
+    public void addPersonToTable(Person person) {
         jdbcTemplate.update("INSERT INTO Person VALUES(?, ?, ?, ?, ?, ?)",
                 person.getPhoneNumber(), person.isBlackMark(),
                 Date.valueOf(person.getLastVisit()), person.getDiscount(),

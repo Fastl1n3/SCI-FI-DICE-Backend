@@ -16,21 +16,29 @@ public class GameDao {
     public GameDao(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
-    public Game getGameByGameId(int gameId){
-        return jdbcTemplate.query("SELECT * FROM Games WHERE game_id=?",
+
+    public Game getGameByGameId(int gameId) {
+        return jdbcTemplate.query("SELECT * FROM Game WHERE game_id=?",
                         new Object[]{gameId}, new GameMapper())
                 .stream().findAny().orElse(null);
     }
-    public List<Game> getAllGames() {
-        return jdbcTemplate.query("SELECT * FROM Games ORDER BY game_id", new Object[]{}, new GameMapper());
+
+    public boolean checkEmpty() {
+        return jdbcTemplate.query("SELECT * FROM Game LIMIT 1", new Object[]{}, new GameMapper()).isEmpty();
     }
+
+    public List<Game> getAllGames() {
+        return jdbcTemplate.query("SELECT * FROM Game ORDER BY game_id LIMIT 1", new Object[]{}, new GameMapper());
+    }
+
     public void add(Game game) {
         jdbcTemplate.update("INSERT INTO Game VALUES(?, ?, ?, ?)",
                 game.getGameId(), game.getName(),
                 game.getRules(), game.isTaken());
     }
+
     public void updateIsTakenByGame(Game game) {
-        jdbcTemplate.update("UPDATE Games SET is_taken=? WHERE id=?",
+        jdbcTemplate.update("UPDATE Game SET is_taken=? WHERE id=?",
                 false, game.getGameId());
     }
 

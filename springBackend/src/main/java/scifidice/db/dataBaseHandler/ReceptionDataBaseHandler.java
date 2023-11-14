@@ -1,15 +1,16 @@
 package scifidice.db.dataBaseHandler;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import scifidice.Entity.ClientInformation;
+import scifidice.Entity.ReceptionCodeAnswer;
+import scifidice.db.dao.BookingDao;
+import scifidice.db.dao.GameDao;
+import scifidice.db.dao.RoomDao;
 import scifidice.db.entities.Booking;
 import scifidice.db.entities.Game;
 import scifidice.db.entities.Room;
 import scifidice.db.mapper.RoomMapper;
-import scifidice.db.mapper.BookingMapper;
-import scifidice.db.mapper.GameMapper;
-import scifidice.Entity.*;
 
 import java.sql.Date;
 import java.time.LocalDate;
@@ -22,23 +23,23 @@ import static scifidice.db.dataBaseHandler.AutoUpdatableDataBaseHandler.getToday
 
 @Component
 public class ReceptionDataBaseHandler extends DataBaseEntityAdder {
+    private final BookingDao bookingDao;
+    private final GameDao gameDao;
+    private final RoomDao roomDao;
+    private final InfoSender infoSender;
     private Booking lastBooking;
-    private final JdbcTemplate jdbcTemplateGamesDB;
-    private final JdbcTemplate jdbcTemplateOrganisationDB;
 
     @Autowired
-    private InfoSender infoSender;
-
-    @Autowired
-    public ReceptionDataBaseHandler(JdbcTemplate jdbcTemplateOrganisationDB, JdbcTemplate jdbcTemplateGamesDB) {
-        this.jdbcTemplateOrganisationDB = jdbcTemplateOrganisationDB;
-        this.jdbcTemplateGamesDB = jdbcTemplateGamesDB;
+    public ReceptionDataBaseHandler(BookingDao bookingDao, GameDao gameDao, RoomDao roomDao, InfoSender infoSender) {
+        this.bookingDao = bookingDao;
+        this.gameDao = gameDao;
+        this.roomDao = roomDao;
+        this.infoSender = infoSender;
     }
 
+
     public ReceptionCodeAnswer isBookingNumberValid(int bookingNumber) {
-        lastBooking = jdbcTemplateOrganisationDB.query("SELECT * FROM Booking WHERE bookingNumber=?",
-                        new Object[]{bookingNumber}, new BookingMapper())
-                .stream().findAny().orElse(null);
+        lastBooking = bookingDao.getByBookingNumber(bookingNumber);
         if (lastBooking == null) {
             return ReceptionCodeAnswer.INVALID_ID;
         }
@@ -73,9 +74,7 @@ public class ReceptionDataBaseHandler extends DataBaseEntityAdder {
 
 
     private boolean isGameIDValid(int id) {
-        Game game = jdbcTemplateGamesDB.query("SELECT * FROM Games WHERE id=?",
-                        new Object[]{id}, new GameMapper())
-                .stream().findAny().orElse(null);
+        Game game = gameDao.getGameByGameId(id);
         return game != null && !game.isTaken();
     }
 
@@ -122,6 +121,7 @@ public class ReceptionDataBaseHandler extends DataBaseEntityAdder {
                 lastBooking.getBeginTime(), lastBooking.getEndTime(),
                 room.getPassword(), ReceptionCodeAnswer.SUCCESS);
     }
+
     public ReceptionCodeAnswer addPeople(int peopleNumber) {
         int oldPeopleNumber;
         int newPeopleNumber;
@@ -169,9 +169,7 @@ public class ReceptionDataBaseHandler extends DataBaseEntityAdder {
     }
 
     private Room getRoom(Booking booking) {
-        return jdbcTemplateOrganisationDB.query("SELECT * FROM Room WHERE number=?",
-                        new Object[]{booking.getRoomNumber()}, new RoomMapper()).
-                stream().findAny().orElse(null);
+        return roomDao.getRoomByNumber(booking.getRoomNumber());
     }
 
     private void updateBookingEntry(int gameID, boolean isPaid) {
@@ -189,15 +187,6 @@ public class ReceptionDataBaseHandler extends DataBaseEntityAdder {
         }
     }
 
-    private void updateRoomDataByRoomNumber(int roomNumber, int peopleNumber) {
-        jdbcTemplateOrganisationDB.update("UPDATE bufferRoomData SET peopleNumber=?, isShouldChange=? WHERE roomNumber=?",
-                peopleNumber, true, roomNumber);
-    }
-
-    private void updateCurrentPeopleNumberByRoomNumber(int roomNumber, int currentPeopleNumber) {
-        jdbcTemplateOrganisationDB.update("UPDATE Room SET currentPersonNumber=? WHERE number=?",
-                currentPeopleNumber, roomNumber);
-    }
 
     private void takeGame(int gameID) {
         jdbcTemplateGamesDB.update("UPDATE Games SET isTaken=? WHERE id=?",

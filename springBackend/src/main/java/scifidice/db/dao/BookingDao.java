@@ -7,11 +7,7 @@ import scifidice.db.entities.Booking;
 import scifidice.db.mapper.BookingMapper;
 
 import java.sql.Date;
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
-
-import static scifidice.config.SpringConfig.NSK_ZONE_ID;
 
 @Component
 public class BookingDao {
@@ -20,6 +16,12 @@ public class BookingDao {
     @Autowired
     public BookingDao(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
+    }
+
+    public Booking getByBookingNumber(int bookingNumber) {
+        return jdbcTemplate.query("SELECT * FROM Booking WHERE bookingNumber=?",
+                        new Object[]{bookingNumber}, new BookingMapper())
+                .stream().findAny().orElse(null);
     }
 
     public Booking getByRoomNumber(int roomNumber) {
