@@ -11,14 +11,14 @@ public class BookingMapper implements RowMapper<Booking> {
     public Booking mapRow(ResultSet resultSet, int i) throws SQLException {
         Booking booking = new Booking();
 
-        booking.setBookingNumber(resultSet.getInt("bookingNumber"));
-        booking.setBeginDate((resultSet.getDate("beginDate")).toLocalDate());
-        booking.setEndDate((resultSet.getDate("endDate")).toLocalDate());
-        booking.setBeginTime(resultSet.getInt("beginTime"));
-        booking.setEndTime(resultSet.getInt("endTime"));
-        booking.setPhoneNumber(resultSet.getString("phoneNumber"));
-        booking.setRoomNumber(resultSet.getInt("roomNumber"));
-        booking.setPaid(resultSet.getBoolean("ispaid"));
+        booking.setBookingNumber(resultSet.getInt("booking_number"));
+        booking.setBeginDate((resultSet.getDate("begin_date")).toLocalDate());
+        booking.setEndDate((resultSet.getDate("end_date")).toLocalDate());
+        booking.setBeginTime(resultSet.getInt("begin_time"));
+        booking.setEndTime(resultSet.getInt("end_time"));
+        booking.setPhoneNumber(resultSet.getString("phone_number"));
+        booking.setRoomNumber(resultSet.getInt("room_number"));
+        booking.setPaid(resultSet.getBoolean("isPaid"));
 
         return booking;
     }

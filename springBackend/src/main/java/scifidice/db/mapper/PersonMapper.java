@@ -10,12 +10,12 @@ public class PersonMapper implements RowMapper<Person> {
     public Person mapRow(ResultSet resultSet, int i) throws SQLException {
         Person person = new Person();
 
-        person.setPhoneNumber(resultSet.getString("phoneNumber"));
-        person.setBlackMark(resultSet.getBoolean("blackMark"));
-        person.setLastVisit(resultSet.getDate("lastVisit").toLocalDate());
+        person.setPhoneNumber(resultSet.getString("phone_number"));
+        person.setBlackMark(resultSet.getBoolean("black_mark"));
+        person.setLastVisit(resultSet.getDate("last_visit").toLocalDate());
         person.setDiscount(resultSet.getInt("discount"));
-        person.setBookingBotChatID(resultSet.getString("bookingBotChatID"));
-        person.setInfoBotChatID(resultSet.getString("infoBotChatID"));
+        person.setBookingBotChatID(resultSet.getString("bookingbot_chatid"));
+        person.setInfoBotChatID(resultSet.getString("infobot_chatid"));
 
         return person;
     }

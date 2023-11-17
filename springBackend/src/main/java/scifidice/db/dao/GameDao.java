@@ -24,11 +24,11 @@ public class GameDao {
     }
 
     public boolean checkEmpty() {
-        return jdbcTemplate.query("SELECT * FROM Game LIMIT 1", new Object[]{}, new GameMapper()).isEmpty();
+        return jdbcTemplate.query("SELECT * FROM Game", new Object[]{}, new GameMapper()).isEmpty();
     }
 
     public List<Game> getAllGames() {
-        return jdbcTemplate.query("SELECT * FROM Game ORDER BY game_id LIMIT 1", new Object[]{}, new GameMapper());
+        return jdbcTemplate.query("SELECT * FROM Game ORDER BY game_id", new Object[]{}, new GameMapper());
     }
 
     public void add(Game game) {

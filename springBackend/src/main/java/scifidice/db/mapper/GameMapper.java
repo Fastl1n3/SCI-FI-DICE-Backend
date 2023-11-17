@@ -13,7 +13,7 @@ public class GameMapper implements RowMapper<Game> {
 
         game.setName(resultSet.getString("name"));
         game.setRules(resultSet.getString("rules"));
-        game.setTaken(resultSet.getBoolean("isTaken"));
+        game.setTaken(resultSet.getBoolean("is_taken"));
 
         return game;
     }
