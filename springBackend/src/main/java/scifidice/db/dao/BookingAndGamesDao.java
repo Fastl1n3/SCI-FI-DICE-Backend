@@ -18,6 +18,10 @@ public class BookingAndGamesDao {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    public void setGamesByBooking(int bookingNumber, int gameId) {
+        jdbcTemplate.update("INSERT INTO Booking_Games VALUES (?,?)", bookingNumber, gameId);
+    }
+
     public List<Game> getGamesByBooking(Booking booking) {
         return jdbcTemplate.query("SELECT * FROM Booking_Games WHERE booking_number = ?",
                 new Object[]{booking.getBookingNumber()}, new GameMapper());

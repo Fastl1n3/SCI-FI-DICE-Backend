@@ -7,6 +7,8 @@ import scifidice.db.entities.Booking;
 import scifidice.db.mapper.BookingMapper;
 
 import java.sql.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
@@ -19,8 +21,17 @@ public class BookingDao {
     }
 
     public Booking getByBookingNumber(int bookingNumber) {
-        return jdbcTemplate.query("SELECT * FROM Booking WHERE bookingNumber=?",
+        return jdbcTemplate.query("SELECT * FROM Booking WHERE booking_number=?",
                         new Object[]{bookingNumber}, new BookingMapper())
+                .stream().findAny().orElse(null);
+    }
+
+    public Booking getBookingByRoomAndDate(int room, LocalDateTime dateTime) {
+        LocalDate date = LocalDate.from(dateTime);
+        int hour = dateTime.getHour();
+
+        return jdbcTemplate.query("SELECT * FROM Booking WHERE room_number=? AND begin_date=? AND begin_time >= ? AND end_time < ?",
+                        new Object[]{room, Date.valueOf(date), hour, hour}, new BookingMapper())
                 .stream().findAny().orElse(null);
     }
 
@@ -52,8 +63,15 @@ public class BookingDao {
         jdbcTemplate.update("UPDATE Booking SET current_people=? WHERE booking_number=?",
                 currentPeople, bookingNumber);
     }
+
+    public void updatePaidByBookingNumber(int bookingNumber, boolean isPaid) {
+        jdbcTemplate.update("UPDATE Booking SET gameID=?, ispaid=? WHERE bookingNumber=?",
+                 isPaid, bookingNumber);
+    }
     public void deleteByBooking(Booking booking) {
         jdbcTemplate.update("DELETE FROM Booking WHERE booking_number=?",
                 booking.getBookingNumber());
     }
+
+
 }

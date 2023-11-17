@@ -57,17 +57,4 @@ public class InitializationDBHandler {
         }
     }
 
-   /* private void initBufferRoomDataTable() throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        RoomsResponse roomsResponse = objectMapper.readValue(ResourceUtils.getFile("src/main/resources/config.json"), RoomsResponse.class);
-
-        List<Room> roomList = roomsResponse.getRooms();
-
-        for (Room room : roomList) {
-            addRoomDataToTable(
-                    new BufferRoomData(room.getNumber()), jdbcTemplateOrganisationDB
-            );
-        }
-    }*/
 }

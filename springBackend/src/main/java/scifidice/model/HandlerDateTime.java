@@ -10,6 +10,8 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static scifidice.config.SpringConfig.NSK_ZONE_ID;
+
 public class HandlerDateTime {
 
     public static StringBuilder hoursPairsHandler(ArrayList<HoursPair> hoursPairs) {
@@ -27,6 +29,9 @@ public class HandlerDateTime {
         LocalDate date = LocalDate.parse(dateStr, formatter);
         if (date.isBefore(LocalDate.now())) {
             throw new DateTimeParseException("Data is before now date", dateStr, 1);
+        }
+        if (date.isAfter(LocalDate.now(NSK_ZONE_ID).plusMonths(2))) {
+            throw new DateTimeParseException("Too late date", "", 1);
         }
         if (Integer.parseInt(dateStr.split("\\.")[0]) != date.getDayOfMonth()) {
             throw new DateTimeParseException("Not valid Date", dateStr, 1);

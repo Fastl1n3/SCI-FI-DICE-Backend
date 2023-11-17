@@ -14,6 +14,7 @@ import org.springframework.util.unit.DataSize;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import scifidice.model.BookingTime;
 
 import javax.servlet.MultipartConfigElement;
 import javax.sql.DataSource;
@@ -25,6 +26,7 @@ import java.util.Objects;
 @Configuration
 @ComponentScan("scifidice")
 @PropertySource("classpath:dataBase.properties")
+@PropertySource("classpath:business.properties")
 @EnableWebMvc
 public class SpringConfig implements WebMvcConfigurer {
 
@@ -78,4 +80,8 @@ public class SpringConfig implements WebMvcConfigurer {
         return new JdbcTemplate(dataSourceOrganisationDB());
     }
 
+    @Bean
+    public BookingTime bookingTime() {
+        return new BookingTime(Integer.parseInt(Objects.requireNonNull(environment.getProperty("maxRooms"))));
+    }
 }

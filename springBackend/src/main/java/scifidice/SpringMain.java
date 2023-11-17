@@ -6,6 +6,8 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 import org.springframework.context.ConfigurableApplicationContext;
 import scifidice.db.dataBaseHandler.AutoUpdatableDataBaseHandler;
 import scifidice.db.dataBaseHandler.InitializationDBHandler;
+import scifidice.model.BookingTime;
+
 import java.io.IOException;
 
 @SpringBootApplication
@@ -15,9 +17,8 @@ public class SpringMain extends SpringBootServletInitializer {
         ConfigurableApplicationContext context = SpringApplication.run(SpringMain.class, args);
         System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         AutoUpdatableDataBaseHandler autoUpdatableDataBaseHandler = context.getBean(AutoUpdatableDataBaseHandler.class);
-        autoUpdatableDataBaseHandler.initTodayBeginBookingList();
-        autoUpdatableDataBaseHandler.deleteOldBooking();
         InitializationDBHandler initializationDBHandler = context.getBean(InitializationDBHandler.class);
+        context.getBean(BookingTime.class).initDatesMap();
         initializationDBHandler.defaultInitialization();
     }
 }
