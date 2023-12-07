@@ -18,7 +18,7 @@ public class RoomDao {
         this.jdbcTemplate = jdbcTemplate;
     }
     public boolean checkEmpty() {
-        return jdbcTemplate.query("SELECT * FROM Room LIMIT 1", new Object[]{}, new GameMapper()).isEmpty();
+        return jdbcTemplate.query("SELECT * FROM Room LIMIT 1", new Object[]{}, new RoomMapper()).isEmpty();
     }
     public Room getRoomByNumber(int number) {
         return jdbcTemplate.query("SELECT * FROM Room WHERE number=?",
