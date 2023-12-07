@@ -28,7 +28,7 @@ public class PersonDao {
     }
 
     public Person getPersonByBookingBotChatId(String bookingChatId) {
-        return jdbcTemplate.query("SELECT * FROM person WHERE bookingbot_chatid=?",
+        return jdbcTemplate.query("SELECT * FROM Person WHERE bookingbot_chatid=?",
                 new Object[]{bookingChatId}, new PersonMapper()).stream().findAny().orElse(null);
     }
     public void addPersonToTable(Person person) {
@@ -38,7 +38,7 @@ public class PersonDao {
                 person.getBookingBotChatID(), person.getInfoBotChatID());
     }
     public void updateLastVisitByPhoneNumber(String phoneNumber){
-        jdbcTemplate.update("UPDATE Person SET lastvisit=? WHERE phonenumber=?",
+        jdbcTemplate.update("UPDATE Person SET last_visit=? WHERE phone_number=?",
                 Date.valueOf(LocalDate.now(NSK_ZONE_ID)), phoneNumber);
     }
     public int updatePhoneNumberByBookingBotChatID(String phoneNumber, String bookingBotChatID) {
