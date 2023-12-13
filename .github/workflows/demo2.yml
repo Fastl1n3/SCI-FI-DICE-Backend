@@ -14,4 +14,4 @@ jobs:
           architecture: x64
           cache: maven
       - name: Build maven
-        run: mvn -B clean package
+        run: mvn -B clean package ./springBackend
