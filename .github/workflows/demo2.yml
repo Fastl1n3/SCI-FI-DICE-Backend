@@ -64,7 +64,7 @@ jobs:
       - name: Cd to project dir
         run: | 
           cd springBackend
-          pwd
+          ls -la
         
       - name: Build and push
         uses: docker/build-push-action@v4
