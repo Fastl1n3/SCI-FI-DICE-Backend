@@ -23,6 +23,7 @@ jobs:
 
       - name: Install Maven dependencies
         run: |
+          echo ${{ secrets.DOCKERHUB_USERNAME }}
           cd springBackend
           mvn install
   
