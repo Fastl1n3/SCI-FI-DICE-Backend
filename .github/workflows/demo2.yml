@@ -60,11 +60,14 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
+      
+      - name: Cd to project dir
+        run: cd springBackend
+        
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
-          context: springBackend
+          context: .
           file: Dockerfile
           push: true
           tags: tericcabrel/bmi:latest
