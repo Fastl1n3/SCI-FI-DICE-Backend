@@ -62,7 +62,9 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       
       - name: Cd to project dir
-        run: cd springBackend
+        run: | 
+          cd springBackend
+          pwd
         
       - name: Build and push
         uses: docker/build-push-action@v4
@@ -70,4 +72,4 @@ jobs:
           context: .
           file: Dockerfile
           push: true
-          tags: tericcabrel/bmi:latest
+          tags: Fastl1n3/scifidiceBackend:v1
