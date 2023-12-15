@@ -6,7 +6,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
-import scifidice.Entity.RoomInfo;
+import scifidice.model.RoomInfo;
 import scifidice.controllers.AdminController;
 import scifidice.db.dao.BookingDao;
 import scifidice.db.dao.RoomDao;

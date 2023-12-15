@@ -14,7 +14,7 @@ import org.springframework.util.unit.DataSize;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import scifidice.model.BookingTime;
+import scifidice.service.BookingTime;
 
 import javax.servlet.MultipartConfigElement;
 import javax.sql.DataSource;

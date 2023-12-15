@@ -1,4 +1,4 @@
-package scifidice.Entity;
+package scifidice.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,10 +9,10 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RoomInfo {
-    private int number;
+public class ClientInformation {
+    private int roomNumber;
+    private int beginTime;
+    private int endTime;
     private String password;
-    private int currentPeopleNumber;
-    private int firstHour;
-    private int secondHour;
+    private ReceptionCodeAnswer codeAnswer;
 }

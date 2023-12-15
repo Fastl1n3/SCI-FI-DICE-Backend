@@ -6,7 +6,7 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 import org.springframework.context.ConfigurableApplicationContext;
 import scifidice.db.dataBaseHandler.AutoUpdatableDataBaseHandler;
 import scifidice.db.dataBaseHandler.InitializationDBHandler;
-import scifidice.model.BookingTime;
+import scifidice.service.BookingTime;
 
 import java.io.IOException;
 

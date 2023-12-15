@@ -10,7 +10,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import scifidice.model.AdminMessage;
-import scifidice.Entity.RoomInfo;
+import scifidice.model.RoomInfo;
 
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 

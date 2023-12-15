@@ -1,4 +1,4 @@
-package scifidice.Entity;
+package scifidice.model;
 
 public enum ReceptionOperation {
     PAYMENT,

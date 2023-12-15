@@ -1,6 +1,6 @@
-package scifidice.model;
+package scifidice.service;
 
-import scifidice.Entity.HoursPair;
+import scifidice.model.HoursPair;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;

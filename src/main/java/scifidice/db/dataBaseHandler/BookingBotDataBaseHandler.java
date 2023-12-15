@@ -7,8 +7,8 @@ import scifidice.db.dao.BookingDao;
 import scifidice.db.dao.PersonDao;
 import scifidice.db.entities.Booking;
 import scifidice.db.entities.Person;;
-import scifidice.Entity.*;
-import scifidice.model.BookingTime;
+import scifidice.model.HoursPair;
+import scifidice.service.BookingTime;
 
 import java.time.LocalDate;
 import java.util.ArrayList;

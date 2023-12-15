@@ -5,7 +5,8 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.web.bind.annotation.*;
 import scifidice.model.*;
 import scifidice.db.dataBaseHandler.BookingBotDataBaseHandler;
-import scifidice.Entity.HoursPair;
+import scifidice.model.HoursPair;
+import scifidice.service.HandlerDateTime;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -14,7 +15,6 @@ import java.util.ArrayList;
 
 import static scifidice.config.SpringConfig.NSK_ZONE_ID;
 import static scifidice.config.SpringConfig.dateTimeFormatter;
-import static scifidice.db.dataBaseHandler.BookingBotDataBaseHandler.dayNumberRelativeToToday;
 
 
 @RestController

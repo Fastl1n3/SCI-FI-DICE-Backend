@@ -8,7 +8,7 @@ import scifidice.model.AdminMessage;
 import scifidice.model.AdminMessageType;
 import scifidice.db.dataBaseHandler.AutoUpdatableDataBaseHandler;
 import scifidice.db.dataBaseHandler.WrongRoomNumberException;
-import scifidice.Entity.CheckPeopleInformation;
+import scifidice.model.CheckPeopleInformation;
 
 import java.io.IOException;
 import java.time.LocalDateTime;

@@ -1,4 +1,4 @@
-package scifidice.Entity;
+package scifidice.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -2,8 +2,8 @@ package scifidice.db.dataBaseHandler;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import scifidice.Entity.ClientInformation;
-import scifidice.Entity.ReceptionCodeAnswer;
+import scifidice.model.ClientInformation;
+import scifidice.model.ReceptionCodeAnswer;
 import scifidice.db.dao.*;
 import scifidice.db.entities.Booking;
 import scifidice.db.entities.Game;

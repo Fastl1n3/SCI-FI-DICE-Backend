@@ -6,8 +6,8 @@ import scifidice.model.AdminMessage;
 import scifidice.model.AdminMessageType;
 import scifidice.model.StringResponse;
 import scifidice.db.dataBaseHandler.ReceptionDataBaseHandler;
-import scifidice.Entity.ClientInformation;
-import scifidice.Entity.ReceptionCodeAnswer;
+import scifidice.model.ClientInformation;
+import scifidice.model.ReceptionCodeAnswer;
 
 import java.time.LocalDateTime;
 

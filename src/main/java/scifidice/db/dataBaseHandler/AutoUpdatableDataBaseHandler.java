@@ -12,8 +12,8 @@ import scifidice.db.entities.Booking;
 import scifidice.db.entities.Game;
 import scifidice.db.entities.Person;
 import scifidice.infoBot.Notification;
-import scifidice.Entity.*;
-import scifidice.model.BookingTime;
+import scifidice.model.CheckPeopleInformation;
+import scifidice.service.BookingTime;
 
 import java.sql.Date;
 import java.time.LocalDate;
