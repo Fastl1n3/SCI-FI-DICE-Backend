@@ -64,7 +64,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
-          context: .
+          context: springBackend
           file: Dockerfile
           push: true
           tags: tericcabrel/bmi:latest
