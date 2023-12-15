@@ -67,3 +67,20 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: daktil/scifidicebackend:v1
+  
+  deploy:
+    runs-on: ubuntu-latest
+    needs:
+      - docker-build
+    steps:
+      - uses: actions/checkout@v3
+      - name: Add Server key
+        run: |
+          touch key.txt && echo "${{ secrets.SERVER_KEY }}" > key.txt
+          chmod 600 key.txt
+      - name: Deploy the app
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PORT: ${{ secrets.SERVER_PORT }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+        run: ./deploy.sh
