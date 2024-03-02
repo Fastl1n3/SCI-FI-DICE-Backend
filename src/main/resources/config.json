@@ -1,0 +1,16 @@
+{
+  "games": [
+    {"gameId": 1, "name": "Монополия", "rules":  "Нужно заработать много денег и сделать банкротами других"},
+    {"gameId": 2, "name": "Манчикин", "rules":  "Нужно дойти до 10 уровня раньше всех"},
+    {"gameId": 3, "name": "Каркасон", "rules":  "Нужно правильно захватывать земли, дороги и реки, чтобы впоследствии набрать очков больше чем ваши соперники"},
+    {"gameId": 4, "name": "Мафия", "rules":  "Нужно вычислить мафию"},
+    {"gameId": 5, "name": "Uno", "rules":  "Нужно быстрее остальных избавиться от карт"}
+  ],
+  "rooms": [
+    {"number": 1, "password":"11", "maxPeopleNumber" : 10},
+    {"number": 2, "password":"22", "maxPeopleNumber" : 8},
+    {"number": 3, "password":"33", "maxPeopleNumber" : 5},
+    {"number": 4, "password":"44", "maxPeopleNumber" : 8},
+    {"number": 5, "password":"55", "maxPeopleNumber" : 5}
+  ]
+}
