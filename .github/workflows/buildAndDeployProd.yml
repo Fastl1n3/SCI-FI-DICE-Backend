@@ -23,7 +23,6 @@ jobs:
 
       - name: Install Maven dependencies
         run: |
-          echo ${{ secrets.DOCKERHUB_USERNAME }}
           mvn install
   
   docker-build:
